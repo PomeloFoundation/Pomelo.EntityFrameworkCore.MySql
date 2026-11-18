@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class ConnectionMySqlTest
     {
-        [ConditionalFact]
+        [Fact]
         public virtual void SetConnectionString()
         {
             var correctConnectionString = MySqlTestStore.CreateConnectionString("ConnectionTest");
@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             Assert.Equal(csb.Port, correctPort);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void SetConnectionString_affects_master_connection()
         {
             var correctConnectionString = MySqlTestStore.CreateConnectionString("ConnectionTest");

@@ -1,6 +1,6 @@
 ﻿{
   "Data": {
-    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;sslmode=none;maxpoolsize=200;",
+    "ConnectionString": "server=127.0.0.1;user id=root;password=Password12!;port=3306;sslmode=None;maxpoolsize=2000;",
     "ServerVersion": "auto",
     "CommandTimeout": "600"
   }

@@ -1,20 +1,49 @@
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class EntitySplittingQueryMySqlTest : EntitySplittingQueryTestBase
 {
-    public EntitySplittingQueryMySqlTest(ITestOutputHelper testOutputHelper)
+    public EntitySplittingQueryMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture)
     {
         // Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    [ConditionalFact]
+    public override async Task Compare_split_entity_to_null(bool async)
+    {
+        await base.Compare_split_entity_to_null(async);
+
+        AssertSql(
+            """
+SELECT `e`.`Id`, `e`.`EntityThreeId`, `e`.`IntValue1`, `e`.`IntValue2`, `s`.`IntValue3`, `e`.`IntValue4`, `e`.`StringValue1`, `e`.`StringValue2`, `e`.`StringValue3`, `e`.`StringValue4`
+FROM `EntityOne` AS `e`
+INNER JOIN `SplitEntityOnePart` AS `s` ON `e`.`Id` = `s`.`Id`
+""");
+    }
+
+    public override async Task FromSql_on_split_entity_with_renamed_columns_uses_default_mappings(bool async)
+    {
+        await base.FromSql_on_split_entity_with_renamed_columns_uses_default_mappings(async);
+
+        AssertSql(
+            """
+SELECT `m`.`Id`, `m`.`EntityThreeId`, `m`.`IntValue1`, `m`.`IntValue2`, `m`.`IntValue3`, `m`.`IntValue4`, `m`.`StringValue1`, `m`.`StringValue2`, `m`.`StringValue3`, `m`.`StringValue4`
+FROM (
+    SELECT `m`.*, `s`.`CustomStringValue3` AS `StringValue3`, `s`.`StringValue4`, `s`.`CustomIntValue3` AS `IntValue3`, `s`.`IntValue4`
+                  FROM `EntityOne` AS `m`
+                  INNER JOIN `SplitEntityOnePart` AS `s` ON `m`.`Id` = `s`.`Id`
+) AS `m`
+ORDER BY `m`.`Id`
+""");
+    }
+
+    [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
@@ -210,9 +239,9 @@ LEFT JOIN `OwnedReferenceExtras1` AS `o0` ON `e`.`Id` = `o0`.`EntityOneId`
         await base.Normal_entity_owning_a_split_reference_with_main_fragment_sharing_custom_projection(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Id`, CASE
-    WHEN (((`e`.`OwnedReference_Id` IS NOT NULL AND (`e`.`OwnedReference_OwnedIntValue1` IS NOT NULL)) AND `e`.`OwnedReference_OwnedIntValue2` IS NOT NULL) AND `o0`.`OwnedIntValue3` IS NOT NULL) AND `o`.`OwnedIntValue4` IS NOT NULL THEN `o`.`OwnedIntValue4`
+    WHEN ((`e`.`OwnedReference_Id` IS NOT NULL AND (`e`.`OwnedReference_OwnedIntValue1` IS NOT NULL)) AND `e`.`OwnedReference_OwnedIntValue2` IS NOT NULL) AND `o0`.`OwnedIntValue3` IS NOT NULL THEN `o`.`OwnedIntValue4`
 END AS `OwnedIntValue4`, CASE
     WHEN (((`e`.`OwnedReference_Id` IS NOT NULL AND (`e`.`OwnedReference_OwnedIntValue1` IS NOT NULL)) AND `e`.`OwnedReference_OwnedIntValue2` IS NOT NULL) AND `o0`.`OwnedIntValue3` IS NOT NULL) AND `o`.`OwnedIntValue4` IS NOT NULL THEN `o`.`OwnedStringValue4`
 END AS `OwnedStringValue4`
@@ -222,7 +251,7 @@ LEFT JOIN `OwnedReferenceExtras1` AS `o0` ON `e`.`Id` = `o0`.`EntityOneId`
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Normal_entity_owning_a_split_reference_with_main_fragment_not_sharing(bool async)
     {
         await base.Normal_entity_owning_a_split_reference_with_main_fragment_not_sharing(async);
@@ -230,7 +259,7 @@ LEFT JOIN `OwnedReferenceExtras1` AS `o0` ON `e`.`Id` = `o0`.`EntityOneId`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Normal_entity_owning_a_split_reference_with_main_fragment_not_sharing_custom_projection(bool async)
     {
         await base.Normal_entity_owning_a_split_reference_with_main_fragment_not_sharing_custom_projection(async);
@@ -238,7 +267,7 @@ LEFT JOIN `OwnedReferenceExtras1` AS `o0` ON `e`.`Id` = `o0`.`EntityOneId`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Normal_entity_owning_a_split_collection(bool async)
     {
         await base.Normal_entity_owning_a_split_collection(async);
@@ -279,17 +308,17 @@ INNER JOIN `SplitEntityOnePart2` AS `s0` ON `e`.`Id` = `s0`.`Id`
         await base.Split_entity_owning_a_collection(async);
 
         AssertSql(
-"""
+            """
 SELECT `e`.`Id`, `e`.`EntityThreeId`, `e`.`IntValue1`, `e`.`IntValue2`, `s0`.`IntValue3`, `s`.`IntValue4`, `e`.`StringValue1`, `e`.`StringValue2`, `s0`.`StringValue3`, `s`.`StringValue4`, `o`.`EntityOneId`, `o`.`Id`, `o`.`OwnedIntValue1`, `o`.`OwnedIntValue2`, `o`.`OwnedIntValue3`, `o`.`OwnedIntValue4`, `o`.`OwnedStringValue1`, `o`.`OwnedStringValue2`, `o`.`OwnedStringValue3`, `o`.`OwnedStringValue4`
 FROM `EntityOne` AS `e`
 INNER JOIN `SplitEntityOnePart3` AS `s` ON `e`.`Id` = `s`.`Id`
 INNER JOIN `SplitEntityOnePart2` AS `s0` ON `e`.`Id` = `s0`.`Id`
 LEFT JOIN `OwnedCollection` AS `o` ON `e`.`Id` = `o`.`EntityOneId`
-ORDER BY `e`.`Id`, `o`.`EntityOneId`
+ORDER BY `e`.`Id`, `o`.`EntityOneId`, `o`.`Id`
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Split_entity_owning_a_split_reference_without_table_sharing(bool async)
     {
         await base.Split_entity_owning_a_split_reference_without_table_sharing(async);
@@ -297,7 +326,7 @@ ORDER BY `e`.`Id`, `o`.`EntityOneId`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Split_entity_owning_a_split_collection(bool async)
     {
         await base.Split_entity_owning_a_split_collection(async);
@@ -332,7 +361,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o` ON `s`.`Id` = `o`.`EntityOneId`
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Split_entity_owning_a_split_reference_with_table_sharing_6(bool async)
     {
         await base.Split_entity_owning_a_split_reference_with_table_sharing_6(async);
@@ -560,7 +589,7 @@ FROM `SiblingEntity` AS `s`
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tph_entity_owning_a_split_reference_on_base_without_table_sharing(bool async)
     {
         await base.Tph_entity_owning_a_split_reference_on_base_without_table_sharing(async);
@@ -568,7 +597,7 @@ FROM `SiblingEntity` AS `s`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpt_entity_owning_a_split_reference_on_base_without_table_sharing(bool async)
     {
         await base.Tpt_entity_owning_a_split_reference_on_base_without_table_sharing(async);
@@ -602,7 +631,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`BaseEntityId` = `o1`.`BaseEntity
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tph_entity_owning_a_split_reference_on_middle_without_table_sharing(bool async)
     {
         await base.Tph_entity_owning_a_split_reference_on_middle_without_table_sharing(async);
@@ -610,7 +639,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`BaseEntityId` = `o1`.`BaseEntity
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpt_entity_owning_a_split_reference_on_middle_without_table_sharing(bool async)
     {
         await base.Tpt_entity_owning_a_split_reference_on_middle_without_table_sharing(async);
@@ -644,7 +673,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tph_entity_owning_a_split_reference_on_leaf_without_table_sharing(bool async)
     {
         await base.Tph_entity_owning_a_split_reference_on_leaf_without_table_sharing(async);
@@ -652,7 +681,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpt_entity_owning_a_split_reference_on_leaf_without_table_sharing(bool async)
     {
         await base.Tpt_entity_owning_a_split_reference_on_leaf_without_table_sharing(async);
@@ -660,7 +689,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpc_entity_owning_a_split_reference_on_leaf_without_table_sharing(bool async)
     {
         await base.Tpc_entity_owning_a_split_reference_on_leaf_without_table_sharing(async);
@@ -668,7 +697,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tph_entity_owning_a_split_collection_on_base(bool async)
     {
         await base.Tph_entity_owning_a_split_collection_on_base(async);
@@ -676,7 +705,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpt_entity_owning_a_split_collection_on_base(bool async)
     {
         await base.Tpt_entity_owning_a_split_collection_on_base(async);
@@ -689,7 +718,7 @@ LEFT JOIN `OwnedReferencePart3` AS `o1` ON `o`.`MiddleEntityId` = `o1`.`MiddleEn
         await base.Tpc_entity_owning_a_split_collection_on_base(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Id`, `u`.`BaseValue`, `u`.`MiddleValue`, `u`.`SiblingValue`, `u`.`LeafValue`, `u`.`Discriminator`, `s0`.`BaseEntityId`, `s0`.`Id`, `s0`.`OwnedIntValue1`, `s0`.`OwnedIntValue2`, `s0`.`OwnedIntValue3`, `s0`.`OwnedIntValue4`, `s0`.`OwnedStringValue1`, `s0`.`OwnedStringValue2`, `s0`.`OwnedStringValue3`, `s0`.`OwnedStringValue4`
 FROM (
     SELECT `b`.`Id`, `b`.`BaseValue`, NULL AS `MiddleValue`, NULL AS `SiblingValue`, NULL AS `LeafValue`, 'BaseEntity' AS `Discriminator`
@@ -710,11 +739,11 @@ LEFT JOIN (
     INNER JOIN `OwnedReferencePart4` AS `o0` ON (`o`.`BaseEntityId` = `o0`.`BaseEntityId`) AND (`o`.`Id` = `o0`.`Id`)
     INNER JOIN `OwnedReferencePart3` AS `o1` ON (`o`.`BaseEntityId` = `o1`.`BaseEntityId`) AND (`o`.`Id` = `o1`.`Id`)
 ) AS `s0` ON `u`.`Id` = `s0`.`BaseEntityId`
-ORDER BY `u`.`Id`, `s0`.`BaseEntityId`
+ORDER BY `u`.`Id`, `s0`.`BaseEntityId`, `s0`.`Id`
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tph_entity_owning_a_split_collection_on_middle(bool async)
     {
         await base.Tph_entity_owning_a_split_collection_on_middle(async);
@@ -722,7 +751,7 @@ ORDER BY `u`.`Id`, `s0`.`BaseEntityId`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpt_entity_owning_a_split_collection_on_middle(bool async)
     {
         await base.Tpt_entity_owning_a_split_collection_on_middle(async);
@@ -735,7 +764,7 @@ ORDER BY `u`.`Id`, `s0`.`BaseEntityId`
         await base.Tpc_entity_owning_a_split_collection_on_middle(async);
 
         AssertSql(
-"""
+            """
 SELECT `u`.`Id`, `u`.`BaseValue`, `u`.`MiddleValue`, `u`.`SiblingValue`, `u`.`LeafValue`, `u`.`Discriminator`, `s0`.`MiddleEntityId`, `s0`.`Id`, `s0`.`OwnedIntValue1`, `s0`.`OwnedIntValue2`, `s0`.`OwnedIntValue3`, `s0`.`OwnedIntValue4`, `s0`.`OwnedStringValue1`, `s0`.`OwnedStringValue2`, `s0`.`OwnedStringValue3`, `s0`.`OwnedStringValue4`
 FROM (
     SELECT `b`.`Id`, `b`.`BaseValue`, NULL AS `MiddleValue`, NULL AS `SiblingValue`, NULL AS `LeafValue`, 'BaseEntity' AS `Discriminator`
@@ -756,11 +785,11 @@ LEFT JOIN (
     INNER JOIN `OwnedReferencePart4` AS `o0` ON (`o`.`MiddleEntityId` = `o0`.`MiddleEntityId`) AND (`o`.`Id` = `o0`.`Id`)
     INNER JOIN `OwnedReferencePart3` AS `o1` ON (`o`.`MiddleEntityId` = `o1`.`MiddleEntityId`) AND (`o`.`Id` = `o1`.`Id`)
 ) AS `s0` ON `u`.`Id` = `s0`.`MiddleEntityId`
-ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`
+ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`, `s0`.`Id`
 """);
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tph_entity_owning_a_split_collection_on_leaf(bool async)
     {
         await base.Tph_entity_owning_a_split_collection_on_leaf(async);
@@ -768,7 +797,7 @@ ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpt_entity_owning_a_split_collection_on_leaf(bool async)
     {
         await base.Tpt_entity_owning_a_split_collection_on_leaf(async);
@@ -776,7 +805,7 @@ ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`
         AssertSql();
     }
 
-    [ConditionalTheory(Skip = "Issue29075")]
+    [Theory(Skip = "Issue29075")]
     public override async Task Tpc_entity_owning_a_split_collection_on_leaf(bool async)
     {
         await base.Tpc_entity_owning_a_split_collection_on_leaf(async);
@@ -784,5 +813,5 @@ ORDER BY `u`.`Id`, `s0`.`MiddleEntityId`
         AssertSql();
     }
 
-    protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+    protected override ITestStoreFactory NonSharedTestStoreFactory => MySqlTestStoreFactory.Instance;
 }

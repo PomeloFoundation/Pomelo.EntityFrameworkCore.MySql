@@ -1,0 +1,99 @@
+name: Rewrite SQL Baselines
+
+# Manually triggered helper that regenerates the `AssertSql(...)` baselines in the functional
+# tests. EF Core's TestSqlLoggerFactory rewrites the test sources in place (using Roslyn) when
+# `EF_TEST_REWRITE_BASELINES` is set, so this workflow just runs the tests with that switch
+# enabled and publishes the result as a patch artifact.
+#
+# The patch is NOT applied automatically: review it, then apply it locally with
+#   git apply baselines.patch
+#
+# Baselines are server specific, so this workflow regenerates them against both a MySQL and a
+# MariaDB server and uploads one patch per server. Some `AssertSql(...)` baselines are guarded by
+# `AppConfig.ServerVersion.Supports.*`, so only the branch matching the server that produced a
+# patch is rewritten in it; apply each patch to the branch it belongs to. Afterwards run the
+# normal build workflow across the full matrix to confirm nothing version specific regressed.
+#
+# NOTE: GitHub only registers a `workflow_dispatch` workflow once the file exists on the default
+# branch, so this workflow can only be started from the Actions UI after it has been merged there.
+on:
+  workflow_dispatch:
+    inputs:
+      dbImage:
+        description: 'Database server container image to generate the baselines against'
+        type: string
+        default: 'mysql:8.0.40'
+      testFilter:
+        description: 'Optional extra dotnet test arguments, e.g. --filter-class Microting.EntityFrameworkCore.MySql.FunctionalTests.Query.ComplexNavigationsCollectionsQueryMySqlTest'
+        type: string
+        default: ''
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+jobs:
+  RewriteBaselines:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      # Baselines are server specific, so by default regenerate them against both a MySQL and a
+      # MariaDB server. A `workflow_dispatch` run may pin a single image through the input.
+      matrix:
+        dbImage: ${{ fromJSON(inputs.dbImage && format('["{0}"]', inputs.dbImage) || '["mysql:8.0.40","mariadb:11.8.5"]') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Database Server
+        env:
+          DB_IMAGE: ${{ matrix.dbImage }}
+        run: |
+          sudo systemctl stop mysql || true
+          docker run --name database -e MYSQL_ROOT_PASSWORD='Password12!' -p 127.0.0.1:3306:3306 -d "$DB_IMAGE"
+          for _ in $(seq 1 300); do
+            # MariaDB 11+ renames the client to `mariadb`; the `mysql` alias is being phased out.
+            # Each client needs its own full command: `(mariadb || mysql) --args` is a shell syntax
+            # error, because arguments cannot be appended to a `( ... )` compound command.
+            if docker exec database sh -c "mariadb --protocol=tcp -h localhost -P 3306 -u root -p'Password12!' -e 'select 1;' || mysql --protocol=tcp -h localhost -P 3306 -u root -p'Password12!' -e 'select 1;'" > /dev/null 2>&1; then
+              echo 'Database server is ready.'
+              exit 0
+            fi
+            sleep 1
+          done
+          echo 'Database server failed to start within 5 minutes.' >&2
+          exit 1
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Setup Solution
+        run: cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+      - name: Build
+        run: dotnet build test/EFCore.MySql.FunctionalTests -c Debug
+      - name: Run Functional Tests with baseline rewriting
+        # The tests are expected to fail here: a baseline is only rewritten when it did not match.
+        continue-on-error: true
+        env:
+          EF_TEST_REWRITE_BASELINES: '1'
+          TEST_FILTER: ${{ inputs.testFilter }}
+        # $TEST_FILTER is intentionally unquoted so that it can expand into multiple arguments.
+        run: dotnet test --project test/EFCore.MySql.FunctionalTests -c Debug --no-build $TEST_FILTER
+      - name: Create patch
+        run: |
+          # Compiled-model baselines for brand new tests are written as *new* files into
+          # Scaffolding/Baselines/<TestName>/. `git diff` ignores untracked files, so stage
+          # them with --intent-to-add first, otherwise those baselines are silently dropped.
+          git add --intent-to-add -- test/EFCore.MySql.FunctionalTests
+          # JsonStringQueryTestBase.cs is deliberately excluded: its rewritten baselines encode
+          # unrelated, still unreviewed JSON casting changes.
+          git diff -- test/EFCore.MySql.FunctionalTests \
+            ':(exclude)test/EFCore.MySql.FunctionalTests/Query/JsonStringQueryTestBase.cs' > baselines.patch
+          echo "Rewritten files:"
+          git diff --stat -- test/EFCore.MySql.FunctionalTests
+      - name: Upload patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: baselines-patch-${{ strategy.job-index }}
+          path: baselines.patch
+          if-no-files-found: warn

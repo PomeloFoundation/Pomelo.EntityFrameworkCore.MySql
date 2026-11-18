@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public partial class NorthwindFunctionsQueryMySqlTest
     {
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task PadLeft_without_second_arg(bool async)
         {
@@ -23,7 +23,7 @@ FROM `Customers` AS `c`
 WHERE LPAD(`c`.`CustomerID`, 8, ' ') = '   ALFKI'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task PadLeft_with_second_arg(bool async)
         {
@@ -37,7 +37,7 @@ FROM `Customers` AS `c`
 WHERE LPAD(`c`.`CustomerID`, 8, 'x') = 'xxxALFKI'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task PadRight_without_second_arg(bool async)
         {
@@ -50,7 +50,7 @@ FROM `Customers` AS `c`
 WHERE RPAD(`c`.`CustomerID`, 8, ' ') = 'ALFKI   '");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public async Task PadRight_with_second_arg(bool async)
         {
@@ -63,7 +63,7 @@ FROM `Customers` AS `c`
 WHERE RPAD(`c`.`CustomerID`, 8, 'c') = 'ALFKIccc'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_math_log_new_base2(bool async)
         {

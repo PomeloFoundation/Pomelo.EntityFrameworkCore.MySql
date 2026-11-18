@@ -10,16 +10,16 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Update.Internal;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Update.Internal;
 using Xunit;
 
 // ReSharper disable InconsistentNaming
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Update
 {
     public class MySqlUpdateSqlGeneratorTest : UpdateSqlGeneratorTestBase
     {
@@ -169,7 +169,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update
 
         #endregion
 
-        [ConditionalFact]
+        [Fact]
         public void AppendBulkInsertOperation_appends_insert_if_store_generated_columns_exist()
         {
             var stringBuilder = new StringBuilder();
@@ -212,7 +212,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
             Assert.Equal(ResultSetMapping.LastInResultSet, grouping);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void AppendBulkInsertOperation_appends_insert_if_no_store_generated_columns_exist()
         {
             var stringBuilder = new StringBuilder();
@@ -230,7 +230,7 @@ VALUES (@p0, @p1, @p2, @p3),
             Assert.Equal(ResultSetMapping.NoResults, grouping);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void AppendBulkInsertOperation_appends_insert_if_store_generated_columns_exist_default_values_only()
         {
             var stringBuilder = new StringBuilder();
@@ -272,7 +272,7 @@ WHERE ROW_COUNT() = 1 AND `Id` = LAST_INSERT_ID();
             Assert.Equal(ResultSetMapping.LastInResultSet, grouping);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void AppendBulkInsertOperation_appends_insert_if_no_store_generated_columns_exist_default_values_only()
         {
             var stringBuilder = new StringBuilder();

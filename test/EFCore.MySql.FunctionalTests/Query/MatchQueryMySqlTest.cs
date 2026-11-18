@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class MatchQueryMySqlTest : MatchQueryMySqlTestBase<MatchQueryMySqlTest.MatchQueryMySqlFixture>
     {
@@ -17,7 +17,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode()
         {
             using var context = CreateContext();
@@ -30,7 +30,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode()
         {
             using var context = CreateContext();
@@ -43,7 +43,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_multiple_columns()
         {
             using var context = CreateContext();
@@ -56,7 +56,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_multiple_columns()
         {
             using var context = CreateContext();
@@ -69,7 +69,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_keywords_separated()
         {
             using var context = CreateContext();
@@ -82,7 +82,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_keywords_separated()
         {
             using var context = CreateContext();
@@ -95,7 +95,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_keywords_separated_multiple_columns()
         {
             using var context = CreateContext();
@@ -108,7 +108,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_keywords_separated_multiple_columns()
         {
             using var context = CreateContext();
@@ -121,7 +121,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_multiple_keywords()
         {
             using var context = CreateContext();
@@ -134,7 +134,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First Herb') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_multiple_keywords()
         {
             using var context = CreateContext();
@@ -147,7 +147,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First Herb') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_multiple_keywords_multiple_columns()
         {
             using var context = CreateContext();
@@ -160,7 +160,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First Herb') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_multiple_keywords_multiple_columns()
         {
             using var context = CreateContext();
@@ -173,7 +173,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First Herb') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_multiple_keywords_separated()
         {
             using var context = CreateContext();
@@ -186,7 +186,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_multiple_keywords_separated()
         {
             using var context = CreateContext();
@@ -199,7 +199,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_natural_language_mode_multiple_keywords_separated_multiple_columns()
         {
             using var context = CreateContext();
@@ -212,7 +212,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_natural_language_mode_multiple_keywords_separated_multiple_columns()
         {
             using var context = CreateContext();
@@ -225,7 +225,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First, Second') > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode()
         {
             using var context = CreateContext();
@@ -238,7 +238,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode()
         {
             using var context = CreateContext();
@@ -251,7 +251,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_multiple_columns()
         {
             using var context = CreateContext();
@@ -264,7 +264,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_multiple_columns()
         {
             using var context = CreateContext();
@@ -277,7 +277,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_with_search_mode_parameter()
         {
             using var context = CreateContext();
@@ -288,14 +288,16 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0"
             Assert.Equal(3, count);
 
             AssertSql(
-                @"@__searchMode_1='2'
+"""
+@searchMode='2'
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) OR (((@__searchMode_1 = 1) AND (MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@__searchMode_1 = 2) AND (MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))");
+WHERE ((@searchMode = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) OR (((@searchMode = 1) AND (MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@searchMode = 2) AND (MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))
+""");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_with_search_mode_parameter()
         {
             using var context = CreateContext();
@@ -306,7 +308,7 @@ WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) 
                 () => context.Set<Herb>().Count(herb => EF.Functions.Match(herb.Name, "First*", searchMode) > 0));
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_with_search_mode_parameter_multiple_columns()
         {
             using var context = CreateContext();
@@ -317,14 +319,16 @@ WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) 
             Assert.Equal(5, count);
 
             AssertSql(
-                @"@__searchMode_1='2'
+"""
+@searchMode='2'
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*') > 0.0)) OR (((@__searchMode_1 = 1) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@__searchMode_1 = 2) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))");
+WHERE ((@searchMode = 0) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*') > 0.0)) OR (((@searchMode = 1) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@searchMode = 2) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))
+""");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_with_search_mode_parameter_multiple_columns()
         {
             using var context = CreateContext();
@@ -335,7 +339,7 @@ WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('Fir
                 () => context.Set<Herb>().Count(herb => EF.Functions.Match(new[] { herb.Name, herb.Garden }, "First*", searchMode) > 0));
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_keywords()
         {
             using var context = CreateContext();
@@ -348,7 +352,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_keywords()
         {
             using var context = CreateContext();
@@ -361,7 +365,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_keywords_evaluate_score()
         {
             var minScore = 0.2;
@@ -371,14 +375,17 @@ WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
 
             Assert.Equal(3, count);
 
-            AssertSql(@"@__minScore_1='0.2'
+            AssertSql(
+"""
+@minScore='0.2'
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > @__minScore_1");
+WHERE MATCH (`h`.`Name`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > @minScore
+""");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_keywords_multiple_columns()
         {
             using var context = CreateContext();
@@ -391,7 +398,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_keywords_multiple_columns()
         {
             using var context = CreateContext();
@@ -404,7 +411,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_keyword_excluded()
         {
             using var context = CreateContext();
@@ -417,7 +424,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_keyword_excluded()
         {
             using var context = CreateContext();
@@ -430,7 +437,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_in_boolean_mode_keyword_excluded_multiple_columns()
         {
             using var context = CreateContext();
@@ -443,7 +450,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_in_boolean_mode_keyword_excluded_multiple_columns()
         {
             using var context = CreateContext();
@@ -456,7 +463,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('Herb* -Second' IN BOOLEAN MODE) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_with_query_expansion()
         {
             using var context = CreateContext();
@@ -469,7 +476,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_with_query_expansion()
         {
             using var context = CreateContext();
@@ -482,7 +489,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void IsMatch_with_query_expansion_multiple_columns()
         {
             using var context = CreateContext();
@@ -495,7 +502,7 @@ FROM `Herb` AS `h`
 WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION) > 0.0");
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Match_with_query_expansion_multiple_columns()
         {
             using var context = CreateContext();
@@ -527,7 +534,7 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION) > 
 
         protected virtual DbContext CreateContext() => Fixture.CreateContext();
 
-        public abstract class MatchQueryMySqlFixtureBase : SharedStoreFixtureBase<PoolableDbContext>, IQueryFixtureBase, ITestSqlLoggerFactory
+        public abstract class MatchQueryMySqlFixtureBase : QueryFixtureBase<PoolableDbContext>, ITestSqlLoggerFactory
         {
             protected override string StoreName { get; } = "MatchQueryTest";
             public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
@@ -561,17 +568,17 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First' WITH QUERY EXPANSION) > 
                 return context;
             }
 
-            public Func<DbContext> GetContextCreator()
+            public override Func<DbContext> GetContextCreator()
                 => CreateContext;
 
-            public ISetSource GetExpectedData()
+            public override ISetSource GetExpectedData()
                 => new MatchQueryData();
 
-            public IReadOnlyDictionary<Type, object> EntitySorters
+            public override IReadOnlyDictionary<Type, object> EntitySorters
                 => new Dictionary<Type, Func<object, object>> { { typeof(Herb), e => ((Herb)e)?.Id }, }.ToDictionary(e => e.Key,
                     e => (object)e.Value);
 
-            public IReadOnlyDictionary<Type, object> EntityAsserters
+            public override IReadOnlyDictionary<Type, object> EntityAsserters
                 => new Dictionary<Type, Action<object, object>>
                 {
                     {

@@ -1,4 +1,4 @@
-﻿namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+﻿namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPHFiltersInheritanceBulkUpdatesMySqlFixture : TPHInheritanceBulkUpdatesMySqlFixture
 {

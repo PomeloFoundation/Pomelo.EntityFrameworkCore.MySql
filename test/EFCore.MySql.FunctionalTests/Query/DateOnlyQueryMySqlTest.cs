@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMySqlTest.DateOnlyQueryMySqlFixture>
 {
@@ -22,7 +20,7 @@ public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMy
         //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DayNumber(bool isAsync)
     {
@@ -34,15 +32,17 @@ public class DateOnlyQueryMySqlTest : DateOnlyQueryMySqlTestBase<DateOnlyQueryMy
                 .Where(i => i.BestServedBefore.DayNumber - todayDateTime.DayNumber < 30));
 
         AssertSql(
-            $@"@__todayDateTime_DayNumber_0='{todayDateTime.DayNumber}'
+$"""
+@todayDateTime_DayNumber='{todayDateTime.DayNumber}'
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE ((TO_DAYS(`i`.`BestServedBefore`) - 366) - @__todayDateTime_DayNumber_0) < 30
-LIMIT 2");
+WHERE ((TO_DAYS(`i`.`BestServedBefore`) - 366) - @todayDateTime_DayNumber) < 30
+LIMIT 2
+""");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DayNumber_offset_same_as_CLR(bool isAsync)
     {
@@ -54,15 +54,17 @@ LIMIT 2");
                 .Where(i => i.BestServedBefore.DayNumber == matchaExpireDayNumber));
 
         AssertSql(
-            @"@__matchaExpireDayNumber_0='839691'
+"""
+@matchaExpireDayNumber='839691'
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE (TO_DAYS(`i`.`BestServedBefore`) - 366) = @__matchaExpireDayNumber_0
-LIMIT 2");
+WHERE (TO_DAYS(`i`.`BestServedBefore`) - 366) = @matchaExpireDayNumber
+LIMIT 2
+""");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task ToDateTime_with_nondefault_TimeOnly(bool isAsync)
     {
@@ -74,15 +76,17 @@ LIMIT 2");
                 .Where(i => i.BestServedBefore.ToDateTime(new TimeOnly(12, 21, 42)) == matchExpireDateTime));
 
         AssertSql(
-            @"@__matchExpireDateTime_0='2299-12-31T12:21:42.0000000' (DbType = DateTime)
+"""
+@matchExpireDateTime='2299-12-31T12:21:42.0000000' (DbType = DateTime)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE ADDTIME(CAST(`i`.`BestServedBefore` AS datetime(6)), TIME '12:21:42') = @__matchExpireDateTime_0
-LIMIT 2");
+WHERE ADDTIME(CAST(`i`.`BestServedBefore` AS datetime(6)), TIME '12:21:42') = @matchExpireDateTime
+LIMIT 2
+""");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task ToDateTime_with_default_TimeOnly(bool isAsync)
     {
@@ -94,15 +98,17 @@ LIMIT 2");
                 .Where(i => i.BestServedBefore.ToDateTime(new TimeOnly()) == matchExpireDateTime));
 
         AssertSql(
-            @"@__matchExpireDateTime_0='2299-12-31T00:00:00.0000000' (DbType = DateTime)
+"""
+@matchExpireDateTime='2299-12-31T00:00:00.0000000' (DbType = DateTime)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE CAST(`i`.`BestServedBefore` AS datetime(6)) = @__matchExpireDateTime_0
-LIMIT 2");
+WHERE CAST(`i`.`BestServedBefore` AS datetime(6)) = @matchExpireDateTime
+LIMIT 2
+""");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DayNumber_FromDateTime(bool isAsync)
     {
@@ -118,7 +124,7 @@ WHERE ((TO_DAYS(`i`.`BestServedBefore`) - 366) - (TO_DAYS(DATE(CURDATE())) - 366
 LIMIT 2");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DateDiffDay(bool isAsync)
     {
@@ -131,15 +137,17 @@ LIMIT 2");
 
         Assert.Single(result);
 
-        AssertSql(
-            $@"@__todayDateOnly_1='{todayDateOnly:MM'/'dd'/'yyyy}' (DbType = Date)
+                AssertSql(
+$"""
+@todayDateOnly='{todayDateOnly:MM'/'dd'/'yyyy}' (DbType = Date)
 
 SELECT `i`.`IceCreamId`, `i`.`BestServedBefore`, `i`.`Name`
 FROM `IceCream` AS `i`
-WHERE TIMESTAMPDIFF(DAY, @__todayDateOnly_1, `i`.`BestServedBefore`) < 30");
+WHERE TIMESTAMPDIFF(DAY, @todayDateOnly, `i`.`BestServedBefore`) < 30
+""");
     }
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(IsAsyncData))]
     public async Task DateDiffDay_ToDateTime(bool isAsync)
     {
@@ -183,7 +191,7 @@ public abstract class DateOnlyQueryMySqlTestBase<TFixture> : QueryTestBase<TFixt
 
     protected virtual DbContext CreateContext() => Fixture.CreateContext();
 
-    public abstract class DateOnlyQueryMySqlFixtureBase : SharedStoreFixtureBase<PoolableDbContext>, IQueryFixtureBase, ITestSqlLoggerFactory
+    public abstract class DateOnlyQueryMySqlFixtureBase : QueryFixtureBase<PoolableDbContext>, ITestSqlLoggerFactory
     {
         protected override string StoreName => "DateOnlyQueryTest";
         public TestSqlLoggerFactory TestSqlLoggerFactory => (TestSqlLoggerFactory)ListLoggerFactory;
@@ -204,17 +212,17 @@ public abstract class DateOnlyQueryMySqlTestBase<TFixture> : QueryTestBase<TFixt
             return context;
         }
 
-        public Func<DbContext> GetContextCreator()
+        public override Func<DbContext> GetContextCreator()
             => CreateContext;
 
-        public ISetSource GetExpectedData()
+        public override ISetSource GetExpectedData()
             => new DateOnlyQueryData();
 
-        public IReadOnlyDictionary<Type, object> EntitySorters
+        public override IReadOnlyDictionary<Type, object> EntitySorters
             => new Dictionary<Type, Func<object, object>> { { typeof(Model.IceCream), e => ((Model.IceCream)e)?.IceCreamId }, }.ToDictionary(
             e => e.Key, e => (object)e.Value);
 
-        public IReadOnlyDictionary<Type, object> EntityAsserters
+        public override IReadOnlyDictionary<Type, object> EntityAsserters
             => new Dictionary<Type, Action<object, object>>
             {
                 {

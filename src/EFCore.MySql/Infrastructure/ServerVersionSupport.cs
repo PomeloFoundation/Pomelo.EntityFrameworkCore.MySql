@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
+namespace Microting.EntityFrameworkCore.MySql.Infrastructure
 {
     public class ServerVersionSupport
     {
@@ -59,6 +59,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool CrossApply => false;
         public virtual bool OuterReferenceInMultiLevelSubquery => false;
         public virtual bool Json => false;
+        public virtual bool JsonSet => false;
         public virtual bool JsonOverlaps => false;
         public virtual bool GeneratedColumns => false;
         public virtual bool NullableGeneratedColumns => false;
@@ -97,11 +98,14 @@ namespace Pomelo.EntityFrameworkCore.MySql.Infrastructure
         public virtual bool WhereSubqueryReferencesOuterQuery => false;
         public virtual bool FieldReferenceInTableValueConstructor => false;
         public virtual bool CollationCharacterSetApplicabilityWithFullCollationNameColumn => false;
+        public virtual bool DeleteWithSelfReferencingSubquery => false;
+        public virtual bool Uuid => false; // The native `uuid` store type is MariaDB 10.7+ only.
 
         public virtual bool JsonTableImplementationStable => JsonTable;
         public virtual bool JsonTableImplementationWithoutMySqlBugs => JsonTable;
         public virtual bool JsonTableImplementationWithoutMariaDbBugs => JsonTable;
         public virtual bool JsonTableImplementationUsingParameterAsSourceWithoutEngineCrash => JsonTable;
         public virtual bool JsonTableImplementationWithAggregate => JsonTable;
+        public virtual bool SpatialJsonSupport => false; // MariaDB 11.8+ spatial JSON support
     }
 }

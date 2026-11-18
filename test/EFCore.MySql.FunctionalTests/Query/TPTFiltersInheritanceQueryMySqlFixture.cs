@@ -1,4 +1,4 @@
-﻿namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+﻿namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class TPTFiltersInheritanceQueryMySqlFixture : TPTInheritanceQueryMySqlFixture
     {

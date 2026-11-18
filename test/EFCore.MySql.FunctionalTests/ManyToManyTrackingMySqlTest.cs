@@ -1,4 +1,4 @@
-﻿namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+﻿namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class ManyToManyTrackingMySqlTest
         : ManyToManyTrackingMySqlTestBase<ManyToManyTrackingMySqlTest.ManyToManyTrackingMySqlFixture>

@@ -32,8 +32,8 @@
           Outputs="$(EFCoreMySqlNetTopologySuiteFile)">
     <ItemGroup>
       <EFCoreMySqlNetTopologySuiteServices Include="Microsoft.EntityFrameworkCore.Design.DesignTimeServicesReferenceAttribute">
-        <_Parameter1>Pomelo.EntityFrameworkCore.MySql.Design.Internal.MySqlNetTopologySuiteDesignTimeServices, Pomelo.EntityFrameworkCore.MySql.NetTopologySuite</_Parameter1>
-        <_Parameter2>Pomelo.EntityFrameworkCore.MySql</_Parameter2>
+        <_Parameter1>Microting.EntityFrameworkCore.MySql.Design.Internal.MySqlNetTopologySuiteDesignTimeServices, Microting.EntityFrameworkCore.MySql.NetTopologySuite</_Parameter1>
+        <_Parameter2>Microting.EntityFrameworkCore.MySql</_Parameter2>
       </EFCoreMySqlNetTopologySuiteServices>
     </ItemGroup>
     <WriteCodeFragment AssemblyAttributes="@(EFCoreMySqlNetTopologySuiteServices)"

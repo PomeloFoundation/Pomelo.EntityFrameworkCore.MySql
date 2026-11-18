@@ -1,12 +1,11 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class EscapesMySqlNoBackslashesTest : EscapesMySqlTestBase<EscapesMySqlNoBackslashesTest.EscapesMySqlNoBackslashesFixture>
     {
@@ -16,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalFact]
+        [Fact]
         public override async Task Input_query_escapes_parameter()
         {
             await base.Input_query_escapes_parameter();
@@ -52,7 +51,7 @@ WHERE `a`.`Name` LIKE '% Garden Party'");
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Where_query_escapes_literal(bool async)
         {
             await base.Where_query_escapes_literal(async);
@@ -63,20 +62,22 @@ FROM `Artists` AS `a`
 WHERE `a`.`Name` = 'Back\slasher''s'");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Where_query_escapes_parameter(bool async)
         {
             await base.Where_query_escapes_parameter(async);
 
             AssertSql(
-                @"@__artistName_0='Back\slasher's' (Size = 4000)
+"""
+@artistName='Back\slasher's' (Size = 4000)
 
 SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE `a`.`Name` = @__artistName_0");
+WHERE `a`.`Name` = @artistName
+""");
         }
 
-        [ConditionalTheory]
+        [Theory]
         public override async Task Where_contains_query_escapes(bool async)
         {
             await base.Where_contains_query_escapes(async);
@@ -100,9 +101,12 @@ WHERE `a`.`Name` IN (
             {
                 AssertSql(
 """
+@artistNames1='Back\slasher's' (Size = 4000)
+@artistNames2='John's Chill Box' (Size = 4000)
+
 SELECT `a`.`ArtistId`, `a`.`Name`
 FROM `Artists` AS `a`
-WHERE `a`.`Name` IN ('Back\slasher''s', 'John''s Chill Box')
+WHERE `a`.`Name` IN (@artistNames1, @artistNames2)
 """);
             }
         }

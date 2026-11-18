@@ -1,15 +1,15 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Xunit.Abstractions;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class TPTTableSplittingMySqlTest : TPTTableSplittingTestBase
     {
-        public TPTTableSplittingMySqlTest(ITestOutputHelper testOutputHelper)
-            : base(testOutputHelper)
+        public TPTTableSplittingMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+            : base(fixture, testOutputHelper)
         {
         }
 
@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
             return Task.CompletedTask;
         }
 
-        protected override ITestStoreFactory TestStoreFactory
+        protected override ITestStoreFactory NonSharedTestStoreFactory
             => MySqlTestStoreFactory.Instance;
     }
 }

@@ -1,12 +1,12 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
 {
     /// <summary>
     /// When using constant values in an LEFT JOIN, an later an ORDER BY is applied, MySQL 5.7+ will incorrectly return a NULL values for
@@ -15,7 +15,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
     ///
     /// See https://bugs.mysql.com/bug.php?id=96947
     ///     https://github.com/OData/WebApi/issues/2124
-    ///     https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql/issues/1293
+    ///     https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/issues/1293
     /// </summary>
     public class MySqlBug96947WorkaroundExpressionVisitor : ExpressionVisitor
     {

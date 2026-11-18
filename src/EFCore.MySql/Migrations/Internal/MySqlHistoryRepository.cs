@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
+namespace Microting.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlHistoryRepository : HistoryRepository
     {
@@ -174,14 +174,14 @@ DROP PROCEDURE {MigrationsScript};
         public virtual void ConfigureModel(ModelBuilder modelBuilder)
             => modelBuilder.HasCharSet(null, DelegationModes.ApplyToDatabases);
 
-        #region Necessary implementation because we cannot directly override EnsureModel
+        #region Customized model creation
 
         private IModel _model;
         private string _migrationIdColumnName;
         private string _productVersionColumnName;
 
         // Customized implementation.
-        protected virtual IModel EnsureModel()
+        protected override IModel EnsureModel()
         {
             if (_model == null)
             {
@@ -237,7 +237,7 @@ DROP PROCEDURE {MigrationsScript};
                 .FindProperty(nameof(HistoryRow.ProductVersion))!
                 .GetColumnName();
 
-        #endregion Necessary implementation because we cannot directly override EnsureModel
+        #endregion Customized model creation
 
         private sealed class MySqlMigrationDatabaseLock(
             MySqlHistoryRepository historyRepository,

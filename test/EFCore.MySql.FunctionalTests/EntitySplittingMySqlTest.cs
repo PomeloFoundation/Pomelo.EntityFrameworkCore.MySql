@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Xunit.Abstractions;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests;
 
 public class EntitySplittingMySqlTest : EntitySplittingTestBase
 {
-    public EntitySplittingMySqlTest(ITestOutputHelper testOutputHelper)
-        : base(testOutputHelper)
+    public EntitySplittingMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+        : base(fixture, testOutputHelper)
     {
     }
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

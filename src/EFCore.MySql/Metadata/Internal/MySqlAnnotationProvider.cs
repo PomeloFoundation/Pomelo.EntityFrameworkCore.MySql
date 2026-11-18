@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -9,10 +9,10 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Storage.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
+namespace Microting.EntityFrameworkCore.MySql.Metadata.Internal
 {
     public class MySqlAnnotationProvider : RelationalAnnotationProvider
     {
@@ -164,6 +164,31 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
             var table = StoreObjectIdentifier.Table(column.Table.Name, column.Table.Schema);
             var properties = column.PropertyMappings.Select(m => m.Property).ToArray();
 
+            // Check if this is a container column for a JSON-mapped complex property
+            // Container columns don't have property mappings in the traditional sense
+            if (column.PropertyMappings.Count == 0 && column.Name != null)
+            {
+                // This might be a container column for a complex property
+                // Check if there's a complex property with this name that has JSON mapping
+                var entityTypes = column.Table.EntityTypeMappings.Select(m => m.TypeBase as IEntityType).Where(e => e != null);
+                foreach (var entityType in entityTypes)
+                {
+                    foreach (var complexProperty in entityType.GetComplexProperties())
+                    {
+                        // Cast to IReadOnlyTypeBase to access GetContainerColumnName
+                        var containerColumnName = (complexProperty.ComplexType as IReadOnlyTypeBase)?.GetContainerColumnName();
+                        if (containerColumnName == column.Name && complexProperty.GetJsonPropertyName() != null)
+                        {
+                            // This is a JSON container column - set the column type to "json"
+                            yield return new Annotation(
+                                RelationalAnnotationNames.ColumnType,
+                                "json");
+                            yield break;
+                        }
+                    }
+                }
+            }
+
             if (column.PropertyMappings.Where(
                     m => (m.TableMapping.IsSharedTablePrincipal ?? true) &&
                          m.TableMapping.TypeBase == m.Property.DeclaringType)
@@ -214,7 +239,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         protected virtual string GetActualModelCharSet(IModel model, DelegationModes currentLevel)
         {
             // If neither character set nor collation has been explicitly defined for the model, and no delegation has been setup, we use
-            // Pomelo's universal fallback default character set (which is `utf8mb4`) and apply it to all database objects.
+            // Microting's universal fallback default character set (which is `utf8mb4`) and apply it to all database objects.
             return model.GetCharSet() is null &&
                    model.GetCharSetDelegation() is null &&
                    model.GetCollation() is null &&
@@ -406,7 +431,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
         {
             return properties.Select(p => p.GetCharSet()).FirstOrDefault(s => s is not null) ??
                    properties.Select(
-                           p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false}
+                           p => p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false} stringTypeMapping &&
+                                MySqlStoreTypeSupport.SupportsCharSetAndCollation(stringTypeMapping.StoreType)
                                // An explicitly defined collation on the current property level takes precedence over an inherited charset.
                                ? p.DeclaringType is IEntityType entityType &&
                                  GetActualEntityTypeCharSet(entityType, currentLevel) is string charSet &&
@@ -436,7 +462,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
                 ? properties.Select(p => p.GetMySqlLegacyCollation()).FirstOrDefault(c => c is not null) ??
                   properties.Select(
                           // An explicitly defined charset on the current property level takes precedence over an inherited collation.
-                          p => (p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false} &&
+                          p => (p.FindTypeMapping() is MySqlStringTypeMapping {IsNationalChar: false} stringTypeMapping &&
+                                MySqlStoreTypeSupport.SupportsCharSetAndCollation(stringTypeMapping.StoreType) &&
                                 p.DeclaringType is IEntityType entityType
                                    ? GetActualEntityTypeCollation(entityType, currentLevel)
                                    : p.FindTypeMapping() is MySqlGuidTypeMapping {IsCharBasedStoreType: true}

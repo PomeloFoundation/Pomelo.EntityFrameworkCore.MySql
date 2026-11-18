@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -7,11 +7,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class DataAnnotationMySqlTest : DataAnnotationRelationalTestBase<DataAnnotationMySqlTest.DataAnnotationMySqlFixture>
     {
@@ -195,7 +194,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual IModel CharSet_attribute_is_applied_to_column()
         {
             var modelBuilder = CreateModelBuilder();
@@ -217,7 +216,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
             public string PersonFirstName { get; set; }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual IModel CharSet_attribute_is_applied_to_table()
         {
             var modelBuilder = CreateModelBuilder();
@@ -237,7 +236,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
             public int Id { get; set; }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual IModel Collation_attribute_is_applied_to_column()
         {
             var modelBuilder = CreateModelBuilder();
@@ -259,7 +258,7 @@ WHERE ROW_COUNT() = 1 AND `Unique_No` = LAST_INSERT_ID();");
             public string PersonFirstName { get; set; }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual IModel Collation_attribute_is_applied_to_table()
         {
             var modelBuilder = CreateModelBuilder();

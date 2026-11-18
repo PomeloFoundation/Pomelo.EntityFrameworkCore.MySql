@@ -1,14 +1,14 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Security.Cryptography;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using MySqlConnector;
 
-namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
+namespace Microting.EntityFrameworkCore.MySql.ValueGeneration.Internal
 {
     public class MySqlSequentialGuidValueGenerator : ValueGenerator<Guid>
     {

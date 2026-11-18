@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
 #nullable enable
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     public class ValueConvertersEndToEndMySqlTest
         : ValueConvertersEndToEndTestBase<ValueConvertersEndToEndMySqlTest.ValueConvertersEndToEndMySqlFixture>
@@ -16,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         }
 
         // CHECK: Do the UNSIGNED types make sense?
-        [ConditionalTheory]
+        [Theory]
         [InlineData(nameof(ConvertingEntity.BoolAsChar), "varchar(1)", false)]
         [InlineData(nameof(ConvertingEntity.BoolAsNullableChar), "varchar(1)", false)]
         [InlineData(nameof(ConvertingEntity.BoolAsString), "varchar(3)", false)]

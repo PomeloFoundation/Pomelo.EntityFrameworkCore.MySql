@@ -1,12 +1,14 @@
-﻿using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
-using Xunit.Abstractions;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class OwnedQueryMySqlTest : OwnedQueryRelationalTestBase<OwnedQueryMySqlTest.OwnedQueryMySqlFixture>
     {
@@ -15,6 +17,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
         {
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
+
+        public override Task Non_nullable_property_through_optional_navigation(bool async)
+            => Assert.ThrowsAsync<InvalidOperationException>(() => AssertQuery(
+                async,
+                ss => ss.Set<Barton>().Select(e => new { e.Throned!.Value })));
 
         [SupportedServerVersionCondition(nameof(ServerVersionSupport.WhereSubqueryReferencesOuterQuery))]
         public override Task Union_over_owned_collection(bool async)

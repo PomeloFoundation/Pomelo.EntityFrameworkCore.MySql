@@ -1,22 +1,22 @@
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.TransportationModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
-using Xunit.Abstractions;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
     public class TableSplittingMySqlTest : TableSplittingTestBase
     {
-        public TableSplittingMySqlTest(ITestOutputHelper testOutputHelper)
-            : base(testOutputHelper)
+        public TableSplittingMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+            : base(fixture, testOutputHelper)
         {
         }
 
-        protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
+        protected override ITestStoreFactory NonSharedTestStoreFactory => MySqlTestStoreFactory.Instance;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -18,7 +18,7 @@ try
 
       dotnet ef migrations add Current --verbose
       dotnet ef database update --verbose
-      dotnet test
+      dotnet test --no-launch-profile
       break;
   }
 }

@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql
+namespace Microting.EntityFrameworkCore.MySql
 {
     public abstract class MySqlTestFixtureBase : IDisposable
     {
@@ -37,7 +37,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
             _initializeEmpty = initializeEmpty;
         }
 
-        public async Task InitializeAsync()
+        public async ValueTask InitializeAsync()
         {
             // We branch here, because CreateDefaultDbContext depends on TestStore.Name by default, which would not be available yet in
             // the MySqlTestStore.RecreateInitialized(StoreName) call.
@@ -59,12 +59,12 @@ namespace Pomelo.EntityFrameworkCore.MySql
             SetupDatabase();
         }
 
-        public Task DisposeAsync()
-            => Task.CompletedTask;
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
 
         protected override void Dispose(bool disposing)
         {
-            TestStore.Dispose();
+            TestStore.DisposeAsync().AsTask().Wait();
             base.Dispose(disposing);
         }
 

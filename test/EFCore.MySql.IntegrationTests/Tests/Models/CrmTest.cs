@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Tests.Models
 {
 	public class CrmFixture
 	{

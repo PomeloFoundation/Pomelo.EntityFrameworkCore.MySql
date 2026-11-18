@@ -1,18 +1,17 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class ComplexNavigationsSharedTypeQueryMySqlTest : ComplexNavigationsSharedTypeQueryRelationalTestBase<
         ComplexNavigationsSharedTypeQueryMySqlTest.ComplexNavigationsSharedTypeQueryMySqlFixture>
@@ -48,7 +47,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         AssertSql(
 """
-@__p_0='1'
+@p='1'
 
 SELECT `l1`.`Name`
 FROM `Level1` AS `l`
@@ -58,7 +57,7 @@ INNER JOIN (
     WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
 ) AS `l1` ON `l`.`Id` = `l1`.`OneToMany_Optional_Inverse2Id`
 ORDER BY `l1`.`Name`
-LIMIT @__p_0
+LIMIT @p
 """);
         }
 
@@ -103,15 +102,15 @@ LIMIT @__p_0
                 });
 
             AssertSql(
-"""
-@__p_0='2'
+                """
+@p='2'
 
-SELECT `l6`.`Id`, `s`.`Id`, `s`.`Id0`, `s`.`Id1`, `s`.`Result`, `s`.`Id2`, `s`.`Id3`, `s`.`Id4`
+SELECT `l6`.`Id`, `s`.`Id`, `s`.`Id0`, `s`.`Id1`, `s`.`Result`, `s`.`Id2`
 FROM (
     SELECT `l`.`Id`
     FROM `Level1` AS `l`
     ORDER BY `l`.`Id`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `l6`
 LEFT JOIN (
     SELECT CASE
@@ -131,7 +130,7 @@ LEFT JOIN (
             WHEN `l2`.`Level2_Required_Id` IS NOT NULL AND (`l2`.`OneToMany_Required_Inverse3Id` IS NOT NULL) THEN `l2`.`Id`
         END = `l5`.`OneToMany_Optional_Inverse4Id`) OR (CASE
             WHEN `l2`.`Level2_Required_Id` IS NOT NULL AND (`l2`.`OneToMany_Required_Inverse3Id` IS NOT NULL) THEN `l2`.`Id`
-        END IS NULL AND (`l5`.`OneToMany_Optional_Inverse4Id` IS NULL))))), 0) > 1 AS `Result`, `l0`.`Id` AS `Id2`, `l2`.`Id` AS `Id3`, `l4`.`Id` AS `Id4`, `l0`.`OneToMany_Optional_Inverse2Id`
+        END IS NULL AND (`l5`.`OneToMany_Optional_Inverse4Id` IS NULL))))), 0) > 1 AS `Result`, `l0`.`Id` AS `Id2`, `l0`.`OneToMany_Optional_Inverse2Id`
     FROM `Level1` AS `l0`
     LEFT JOIN (
         SELECT `l1`.`Id`, `l1`.`Level2_Required_Id`, `l1`.`OneToMany_Required_Inverse3Id`
@@ -149,7 +148,7 @@ LEFT JOIN (
     END = `l4`.`Level3_Required_Id`
     WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
 ) AS `s` ON `l6`.`Id` = `s`.`OneToMany_Optional_Inverse2Id`
-ORDER BY `l6`.`Id`, `s`.`Id2`, `s`.`Id3`
+ORDER BY `l6`.`Id`
 """);
         }
 
@@ -170,11 +169,11 @@ WHERE `l1`.`Level2_Name` IS NOT NULL AND (LEFT(`l1`.`Level2_Name`, CHAR_LENGTH(`
 """);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
+        [Theory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
         public override Task GroupBy_aggregate_where_required_relationship(bool async)
             => base.GroupBy_aggregate_where_required_relationship(async);
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
+        [Theory(Skip = "https://github.com/dotnet/efcore/issues/26104")]
         public override Task GroupBy_aggregate_where_required_relationship_2(bool async)
             => base.GroupBy_aggregate_where_required_relationship_2(async);
 
@@ -195,7 +194,7 @@ WHERE `l1`.`Level2_Name` IS NOT NULL AND (LEFT(`l1`.`Level2_Name`, CHAR_LENGTH(`
             AssertSql();
         }
 
-        [ConditionalTheory(Skip = "Does not throw an EqualException, but still does not work.")]
+        [Theory(Skip = "Does not throw an EqualException, but still does not work.")]
         public override async Task Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(bool async)
         {
             // DefaultIfEmpty on child collection. Issue #19095.

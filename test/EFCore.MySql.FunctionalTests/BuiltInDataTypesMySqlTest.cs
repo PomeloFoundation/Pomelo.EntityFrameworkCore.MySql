@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -14,13 +14,12 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
-using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.Json))]
     public class BuiltInDataTypesMySqlTest :
@@ -129,11 +128,11 @@ WHERE `m`.`TimeSpanAsTime` = TIME '00:01:02'",
 
                 Assert.Empty(results);
                 Assert.Equal(
-                    @"@__timeSpan_0='02:01:00' (Nullable = true)
+                    @"@timeSpan='02:01:00' (Nullable = true)
 
 SELECT `m`.`Int`
 FROM `MappedNullableDataTypes` AS `m`
-WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
+WHERE `m`.`TimeSpanAsTime` = @timeSpan",
                     Sql,
                     ignoreLineEndingDifferences: true);
             }
@@ -874,84 +873,6 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             }
         }
 
-        // Overridden because of TestNullableDateTimeOffset, since MySQL does not offer a native data type to save a date/time with
-        // timezone.
-        public override async Task Can_insert_and_read_back_all_nullable_data_types_with_values_set_to_non_null()
-        {
-            using (var context = CreateContext())
-            {
-                context.Set<BuiltInNullableDataTypes>().Add(
-                    new BuiltInNullableDataTypes
-                    {
-                        Id = 101,
-                        PartitionId = 101,
-                        TestString = "TestString",
-                        TestByteArray = new byte[] { 10, 9, 8, 7, 6 },
-                        TestNullableInt16 = -1234,
-                        TestNullableInt32 = -123456789,
-                        TestNullableInt64 = -1234567890123456789L,
-                        TestNullableDouble = -1.23456789,
-                        TestNullableDecimal = -1234567890.01M,
-                        TestNullableDateTime = DateTime.Parse("01/01/2000 12:34:56").ToUniversalTime(),
-                        TestNullableDateTimeOffset = new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                        TestNullableTimeSpan = new TimeSpan(0, 10, 9, 8, 7),
-                        TestNullableSingle = -1.234F,
-                        TestNullableBoolean = false,
-                        TestNullableByte = 255,
-                        TestNullableUnsignedInt16 = 1234,
-                        TestNullableUnsignedInt32 = 1234565789U,
-                        TestNullableUnsignedInt64 = 1234567890123456789UL,
-                        TestNullableCharacter = 'a',
-                        TestNullableSignedByte = -128,
-                        Enum64 = Enum64.SomeValue,
-                        Enum32 = Enum32.SomeValue,
-                        Enum16 = Enum16.SomeValue,
-                        Enum8 = Enum8.SomeValue,
-                        EnumU64 = EnumU64.SomeValue,
-                        EnumU32 = EnumU32.SomeValue,
-                        EnumU16 = EnumU16.SomeValue,
-                        EnumS8 = EnumS8.SomeValue
-                    });
-
-                Assert.Equal(1, await context.SaveChangesAsync());
-            }
-
-            using (var context = CreateContext())
-            {
-                var dt = (await context.Set<BuiltInNullableDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
-
-                var entityType = context.Model.FindEntityType(typeof(BuiltInNullableDataTypes));
-                AssertEqualIfMapped(entityType, "TestString", () => dt.TestString);
-                AssertEqualIfMapped(entityType, new byte[] { 10, 9, 8, 7, 6 }, () => dt.TestByteArray);
-                AssertEqualIfMapped(entityType, (short)-1234, () => dt.TestNullableInt16);
-                AssertEqualIfMapped(entityType, -123456789, () => dt.TestNullableInt32);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.TestNullableInt64);
-                AssertEqualIfMapped(entityType, -1.23456789, () => dt.TestNullableDouble);
-                AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.TestNullableDecimal);
-                AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56").ToUniversalTime(), () => dt.TestNullableDateTime);
-                AssertEqualIfMapped(
-                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)).ToUniversalTime(), // adjusted for Pomelo's translation
-                    () => dt.TestNullableDateTimeOffset);
-                AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TestNullableTimeSpan);
-                AssertEqualIfMapped(entityType, -1.234F, () => dt.TestNullableSingle);
-                AssertEqualIfMapped(entityType, false, () => dt.TestNullableBoolean);
-                AssertEqualIfMapped(entityType, (byte)255, () => dt.TestNullableByte);
-                AssertEqualIfMapped(entityType, Enum64.SomeValue, () => dt.Enum64);
-                AssertEqualIfMapped(entityType, Enum32.SomeValue, () => dt.Enum32);
-                AssertEqualIfMapped(entityType, Enum16.SomeValue, () => dt.Enum16);
-                AssertEqualIfMapped(entityType, Enum8.SomeValue, () => dt.Enum8);
-                AssertEqualIfMapped(entityType, (ushort)1234, () => dt.TestNullableUnsignedInt16);
-                AssertEqualIfMapped(entityType, 1234565789U, () => dt.TestNullableUnsignedInt32);
-                AssertEqualIfMapped(entityType, 1234567890123456789UL, () => dt.TestNullableUnsignedInt64);
-                AssertEqualIfMapped(entityType, 'a', () => dt.TestNullableCharacter);
-                AssertEqualIfMapped(entityType, (sbyte)-128, () => dt.TestNullableSignedByte);
-                AssertEqualIfMapped(entityType, EnumU64.SomeValue, () => dt.EnumU64);
-                AssertEqualIfMapped(entityType, EnumU32.SomeValue, () => dt.EnumU32);
-                AssertEqualIfMapped(entityType, EnumU16.SomeValue, () => dt.EnumU16);
-                AssertEqualIfMapped(entityType, EnumS8.SomeValue, () => dt.EnumS8);
-            }
-        }
-
         private static void AssertNullMappedNullableDataTypes(MappedNullableDataTypes entity, int id)
         {
             Assert.Equal(id, entity.Int);
@@ -1060,7 +981,7 @@ WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Columns_have_expected_data_types()
         {
             var actual = QueryForColumnTypes(CreateContext());
@@ -1074,7 +995,7 @@ AnimalIdentification.Id ---> [int] [Precision = 10 Scale = 0]
 AnimalIdentification.Method ---> [int] [Precision = 10 Scale = 0]
 BinaryForeignKeyDataType.BinaryKeyDataTypeId ---> [nullable varbinary] [MaxLength = 3072]
 BinaryForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
-BinaryKeyDataType.Ex ---> [nullable longtext] [MaxLength = -1]
+BinaryKeyDataType.Ex ---> [longtext] [MaxLength = -1]
 BinaryKeyDataType.Id ---> [varbinary] [MaxLength = 3072]
 BuiltInDataTypes.Enum16 ---> [smallint] [Precision = 5 Scale = 0]
 BuiltInDataTypes.Enum32 ---> [int] [Precision = 10 Scale = 0]
@@ -1104,94 +1025,6 @@ BuiltInDataTypes.TestTimeSpan ---> [time] [Precision = 6]
 BuiltInDataTypes.TestUnsignedInt16 ---> [smallint] [Precision = 5 Scale = 0]
 BuiltInDataTypes.TestUnsignedInt32 ---> [int] [Precision = 10 Scale = 0]
 BuiltInDataTypes.TestUnsignedInt64 ---> [bigint] [Precision = 20 Scale = 0]
-BuiltInDataTypesShadow.Enum16 ---> [smallint] [Precision = 5 Scale = 0]
-BuiltInDataTypesShadow.Enum32 ---> [int] [Precision = 10 Scale = 0]
-BuiltInDataTypesShadow.Enum64 ---> [bigint] [Precision = 19 Scale = 0]
-BuiltInDataTypesShadow.Enum8 ---> [tinyint] [Precision = 3 Scale = 0]
-BuiltInDataTypesShadow.EnumS8 ---> [tinyint] [Precision = 3 Scale = 0]
-BuiltInDataTypesShadow.EnumU16 ---> [smallint] [Precision = 5 Scale = 0]
-BuiltInDataTypesShadow.EnumU32 ---> [int] [Precision = 10 Scale = 0]
-BuiltInDataTypesShadow.EnumU64 ---> [bigint] [Precision = 20 Scale = 0]
-BuiltInDataTypesShadow.Id ---> [int] [Precision = 10 Scale = 0]
-BuiltInDataTypesShadow.PartitionId ---> [int] [Precision = 10 Scale = 0]
-BuiltInDataTypesShadow.TestBoolean ---> [tinyint] [Precision = 3 Scale = 0]
-BuiltInDataTypesShadow.TestByte ---> [tinyint] [Precision = 3 Scale = 0]
-BuiltInDataTypesShadow.TestCharacter ---> [varchar] [MaxLength = 1]
-BuiltInDataTypesShadow.TestDateOnly ---> [date]
-BuiltInDataTypesShadow.TestDateTime ---> [datetime] [Precision = 6]
-BuiltInDataTypesShadow.TestDateTimeOffset ---> [datetime] [Precision = 6]
-BuiltInDataTypesShadow.TestDecimal ---> [decimal] [Precision = 65 Scale = 30]
-BuiltInDataTypesShadow.TestDouble ---> [double] [Precision = 22]
-BuiltInDataTypesShadow.TestInt16 ---> [smallint] [Precision = 5 Scale = 0]
-BuiltInDataTypesShadow.TestInt32 ---> [int] [Precision = 10 Scale = 0]
-BuiltInDataTypesShadow.TestInt64 ---> [bigint] [Precision = 19 Scale = 0]
-BuiltInDataTypesShadow.TestSignedByte ---> [tinyint] [Precision = 3 Scale = 0]
-BuiltInDataTypesShadow.TestSingle ---> [float] [Precision = 12]
-BuiltInDataTypesShadow.TestTimeOnly ---> [time] [Precision = 6]
-BuiltInDataTypesShadow.TestTimeSpan ---> [time] [Precision = 6]
-BuiltInDataTypesShadow.TestUnsignedInt16 ---> [smallint] [Precision = 5 Scale = 0]
-BuiltInDataTypesShadow.TestUnsignedInt32 ---> [int] [Precision = 10 Scale = 0]
-BuiltInDataTypesShadow.TestUnsignedInt64 ---> [bigint] [Precision = 20 Scale = 0]
-BuiltInNullableDataTypes.Enum16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypes.Enum32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypes.Enum64 ---> [nullable bigint] [Precision = 19 Scale = 0]
-BuiltInNullableDataTypes.Enum8 ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypes.EnumS8 ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypes.EnumU16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypes.EnumU32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypes.EnumU64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-BuiltInNullableDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypes.PartitionId ---> [int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypes.TestByteArray ---> [nullable longblob] [MaxLength = -1]
-BuiltInNullableDataTypes.TestNullableBoolean ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypes.TestNullableByte ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypes.TestNullableCharacter ---> [nullable varchar] [MaxLength = 1]
-BuiltInNullableDataTypes.TestNullableDateOnly ---> [nullable date]
-BuiltInNullableDataTypes.TestNullableDateTime ---> [nullable datetime] [Precision = 6]
-BuiltInNullableDataTypes.TestNullableDateTimeOffset ---> [nullable datetime] [Precision = 6]
-BuiltInNullableDataTypes.TestNullableDecimal ---> [nullable decimal] [Precision = 65 Scale = 30]
-BuiltInNullableDataTypes.TestNullableDouble ---> [nullable double] [Precision = 22]
-BuiltInNullableDataTypes.TestNullableInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypes.TestNullableInt32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypes.TestNullableInt64 ---> [nullable bigint] [Precision = 19 Scale = 0]
-BuiltInNullableDataTypes.TestNullableSignedByte ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypes.TestNullableSingle ---> [nullable float] [Precision = 12]
-BuiltInNullableDataTypes.TestNullableTimeOnly ---> [nullable time] [Precision = 6]
-BuiltInNullableDataTypes.TestNullableTimeSpan ---> [nullable time] [Precision = 6]
-BuiltInNullableDataTypes.TestNullableUnsignedInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypes.TestNullableUnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypes.TestNullableUnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-BuiltInNullableDataTypes.TestString ---> [nullable longtext] [MaxLength = -1]
-BuiltInNullableDataTypesShadow.Enum16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypesShadow.Enum32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypesShadow.Enum64 ---> [nullable bigint] [Precision = 19 Scale = 0]
-BuiltInNullableDataTypesShadow.Enum8 ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypesShadow.EnumS8 ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypesShadow.EnumU16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypesShadow.EnumU32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypesShadow.EnumU64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-BuiltInNullableDataTypesShadow.Id ---> [int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypesShadow.PartitionId ---> [int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypesShadow.TestByteArray ---> [nullable longblob] [MaxLength = -1]
-BuiltInNullableDataTypesShadow.TestNullableBoolean ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableByte ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableCharacter ---> [nullable varchar] [MaxLength = 1]
-BuiltInNullableDataTypesShadow.TestNullableDateOnly ---> [nullable date]
-BuiltInNullableDataTypesShadow.TestNullableDateTime ---> [nullable datetime] [Precision = 6]
-BuiltInNullableDataTypesShadow.TestNullableDateTimeOffset ---> [nullable datetime] [Precision = 6]
-BuiltInNullableDataTypesShadow.TestNullableDecimal ---> [nullable decimal] [Precision = 65 Scale = 30]
-BuiltInNullableDataTypesShadow.TestNullableDouble ---> [nullable double] [Precision = 22]
-BuiltInNullableDataTypesShadow.TestNullableInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableInt32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableInt64 ---> [nullable bigint] [Precision = 19 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableSignedByte ---> [nullable tinyint] [Precision = 3 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableSingle ---> [nullable float] [Precision = 12]
-BuiltInNullableDataTypesShadow.TestNullableTimeOnly ---> [nullable time] [Precision = 6]
-BuiltInNullableDataTypesShadow.TestNullableTimeSpan ---> [nullable time] [Precision = 6]
-BuiltInNullableDataTypesShadow.TestNullableUnsignedInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableUnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
-BuiltInNullableDataTypesShadow.TestNullableUnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-BuiltInNullableDataTypesShadow.TestString ---> [nullable longtext] [MaxLength = -1]
 DateTimeEnclosure.DateTimeOffset ---> [nullable datetime] [Precision = 6]
 DateTimeEnclosure.Id ---> [int] [Precision = 10 Scale = 0]
 EmailTemplate.Id ---> [char] [MaxLength = 36]
@@ -1285,68 +1118,12 @@ MappedNullableDataTypes.UlongAsDecimal200 ---> [nullable decimal] [Precision = 2
 MappedNullableDataTypes.UShortAsInt ---> [nullable int] [Precision = 10 Scale = 0]
 MappedNullableDataTypes.UShortAsSmallint ---> [nullable smallint] [Precision = 5 Scale = 0]
 MappedNullableDataTypes.UShortAsYear ---> [nullable year]
-MaxLengthDataTypes.ByteArray5 ---> [nullable varbinary] [MaxLength = 5]
-MaxLengthDataTypes.ByteArray9000 ---> [nullable longblob] [MaxLength = -1]
+MaxLengthDataTypes.ByteArray5 ---> [varbinary] [MaxLength = 5]
+MaxLengthDataTypes.ByteArray9000 ---> [longblob] [MaxLength = -1]
 MaxLengthDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
-MaxLengthDataTypes.String3 ---> [nullable varchar] [MaxLength = 3]
-MaxLengthDataTypes.String9000 ---> [nullable varchar] [MaxLength = 9000]
-MaxLengthDataTypes.StringUnbounded ---> [nullable longtext] [MaxLength = -1]
-NonNullableBackedDataTypes.Boolean ---> [nullable tinyint] [Precision = 3 Scale = 0]
-NonNullableBackedDataTypes.Byte ---> [nullable tinyint] [Precision = 3 Scale = 0]
-NonNullableBackedDataTypes.Character ---> [nullable varchar] [MaxLength = 1]
-NonNullableBackedDataTypes.DateOnly ---> [nullable date]
-NonNullableBackedDataTypes.DateTime ---> [nullable datetime] [Precision = 6]
-NonNullableBackedDataTypes.DateTimeOffset ---> [nullable datetime] [Precision = 6]
-NonNullableBackedDataTypes.Decimal ---> [nullable decimal] [Precision = 65 Scale = 30]
-NonNullableBackedDataTypes.Double ---> [nullable double] [Precision = 22]
-NonNullableBackedDataTypes.Enum16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-NonNullableBackedDataTypes.Enum32 ---> [nullable int] [Precision = 10 Scale = 0]
-NonNullableBackedDataTypes.Enum64 ---> [nullable bigint] [Precision = 19 Scale = 0]
-NonNullableBackedDataTypes.Enum8 ---> [nullable tinyint] [Precision = 3 Scale = 0]
-NonNullableBackedDataTypes.EnumS8 ---> [nullable tinyint] [Precision = 3 Scale = 0]
-NonNullableBackedDataTypes.EnumU16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-NonNullableBackedDataTypes.EnumU32 ---> [nullable int] [Precision = 10 Scale = 0]
-NonNullableBackedDataTypes.EnumU64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-NonNullableBackedDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
-NonNullableBackedDataTypes.Int16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-NonNullableBackedDataTypes.Int32 ---> [nullable int] [Precision = 10 Scale = 0]
-NonNullableBackedDataTypes.Int64 ---> [nullable bigint] [Precision = 19 Scale = 0]
-NonNullableBackedDataTypes.PartitionId ---> [int] [Precision = 10 Scale = 0]
-NonNullableBackedDataTypes.SignedByte ---> [nullable tinyint] [Precision = 3 Scale = 0]
-NonNullableBackedDataTypes.Single ---> [nullable float] [Precision = 12]
-NonNullableBackedDataTypes.TimeOnly ---> [nullable time] [Precision = 6]
-NonNullableBackedDataTypes.TimeSpan ---> [nullable time] [Precision = 6]
-NonNullableBackedDataTypes.UnsignedInt16 ---> [nullable smallint] [Precision = 5 Scale = 0]
-NonNullableBackedDataTypes.UnsignedInt32 ---> [nullable int] [Precision = 10 Scale = 0]
-NonNullableBackedDataTypes.UnsignedInt64 ---> [nullable bigint] [Precision = 20 Scale = 0]
-NullableBackedDataTypes.Boolean ---> [tinyint] [Precision = 3 Scale = 0]
-NullableBackedDataTypes.Byte ---> [tinyint] [Precision = 3 Scale = 0]
-NullableBackedDataTypes.Character ---> [varchar] [MaxLength = 1]
-NullableBackedDataTypes.DateOnly ---> [date]
-NullableBackedDataTypes.DateTime ---> [datetime] [Precision = 6]
-NullableBackedDataTypes.DateTimeOffset ---> [datetime] [Precision = 6]
-NullableBackedDataTypes.Decimal ---> [decimal] [Precision = 65 Scale = 30]
-NullableBackedDataTypes.Double ---> [double] [Precision = 22]
-NullableBackedDataTypes.Enum16 ---> [smallint] [Precision = 5 Scale = 0]
-NullableBackedDataTypes.Enum32 ---> [int] [Precision = 10 Scale = 0]
-NullableBackedDataTypes.Enum64 ---> [bigint] [Precision = 19 Scale = 0]
-NullableBackedDataTypes.Enum8 ---> [tinyint] [Precision = 3 Scale = 0]
-NullableBackedDataTypes.EnumS8 ---> [tinyint] [Precision = 3 Scale = 0]
-NullableBackedDataTypes.EnumU16 ---> [smallint] [Precision = 5 Scale = 0]
-NullableBackedDataTypes.EnumU32 ---> [int] [Precision = 10 Scale = 0]
-NullableBackedDataTypes.EnumU64 ---> [bigint] [Precision = 20 Scale = 0]
-NullableBackedDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
-NullableBackedDataTypes.Int16 ---> [smallint] [Precision = 5 Scale = 0]
-NullableBackedDataTypes.Int32 ---> [int] [Precision = 10 Scale = 0]
-NullableBackedDataTypes.Int64 ---> [bigint] [Precision = 19 Scale = 0]
-NullableBackedDataTypes.PartitionId ---> [int] [Precision = 10 Scale = 0]
-NullableBackedDataTypes.SignedByte ---> [tinyint] [Precision = 3 Scale = 0]
-NullableBackedDataTypes.Single ---> [float] [Precision = 12]
-NullableBackedDataTypes.TimeOnly ---> [time] [Precision = 6]
-NullableBackedDataTypes.TimeSpan ---> [time] [Precision = 6]
-NullableBackedDataTypes.UnsignedInt16 ---> [smallint] [Precision = 5 Scale = 0]
-NullableBackedDataTypes.UnsignedInt32 ---> [int] [Precision = 10 Scale = 0]
-NullableBackedDataTypes.UnsignedInt64 ---> [bigint] [Precision = 20 Scale = 0]
+MaxLengthDataTypes.String3 ---> [varchar] [MaxLength = 3]
+MaxLengthDataTypes.String9000 ---> [varchar] [MaxLength = 9000]
+MaxLengthDataTypes.StringUnbounded ---> [longtext] [MaxLength = -1]
 ObjectBackedDataTypes.Boolean ---> [tinyint] [Precision = 3 Scale = 0]
 ObjectBackedDataTypes.Byte ---> [tinyint] [Precision = 3 Scale = 0]
 ObjectBackedDataTypes.Bytes ---> [nullable longblob] [MaxLength = -1]
@@ -1371,23 +1148,23 @@ ObjectBackedDataTypes.Int64 ---> [bigint] [Precision = 19 Scale = 0]
 ObjectBackedDataTypes.PartitionId ---> [int] [Precision = 10 Scale = 0]
 ObjectBackedDataTypes.SignedByte ---> [tinyint] [Precision = 3 Scale = 0]
 ObjectBackedDataTypes.Single ---> [float] [Precision = 12]
-ObjectBackedDataTypes.String ---> [nullable longtext] [MaxLength = -1]
+ObjectBackedDataTypes.String ---> [longtext] [MaxLength = -1]
 ObjectBackedDataTypes.TimeOnly ---> [time] [Precision = 6]
 ObjectBackedDataTypes.TimeSpan ---> [time] [Precision = 6]
 ObjectBackedDataTypes.UnsignedInt16 ---> [smallint] [Precision = 5 Scale = 0]
 ObjectBackedDataTypes.UnsignedInt32 ---> [int] [Precision = 10 Scale = 0]
 ObjectBackedDataTypes.UnsignedInt64 ---> [bigint] [Precision = 20 Scale = 0]
 StringEnclosure.Id ---> [int] [Precision = 10 Scale = 0]
-StringEnclosure.Value ---> [nullable longtext] [MaxLength = -1]
+StringEnclosure.Value ---> [longtext] [MaxLength = -1]
 StringForeignKeyDataType.Id ---> [int] [Precision = 10 Scale = 0]
 StringForeignKeyDataType.StringKeyDataTypeId ---> [nullable varchar] [MaxLength = 255]
 StringKeyDataType.Id ---> [varchar] [MaxLength = 255]
 UnicodeDataTypes.Id ---> [int] [Precision = 10 Scale = 0]
-UnicodeDataTypes.StringAnsi ---> [nullable longtext] [MaxLength = -1]
-UnicodeDataTypes.StringAnsi3 ---> [nullable varchar] [MaxLength = 3]
-UnicodeDataTypes.StringAnsi9000 ---> [nullable varchar] [MaxLength = 9000]
-UnicodeDataTypes.StringDefault ---> [nullable longtext] [MaxLength = -1]
-UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
+UnicodeDataTypes.StringAnsi ---> [longtext] [MaxLength = -1]
+UnicodeDataTypes.StringAnsi3 ---> [varchar] [MaxLength = 3]
+UnicodeDataTypes.StringAnsi9000 ---> [varchar] [MaxLength = 9000]
+UnicodeDataTypes.StringDefault ---> [longtext] [MaxLength = -1]
+UnicodeDataTypes.StringUnicode ---> [longtext] [MaxLength = -1]
 ";
 
             Assert.Equal(expected, actual, ignoreLineEndingDifferences: true, ignoreCase: true, ignoreWhiteSpaceDifferences: true);
@@ -1521,8 +1298,8 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
         //       Recheck/remove after `https://github.com/dotnet/efcore/issues/26068` has been fixed upstream.
         #region https://github.com/dotnet/efcore/issues/26068
 
-        [ConditionalFact]
-        public override async Task Can_insert_and_read_back_all_non_nullable_data_types()
+        [Fact]
+        public async Task Can_insert_and_read_back_all_non_nullable_data_types()
         {
             using (var context = CreateContext())
             {
@@ -1595,154 +1372,7 @@ UnicodeDataTypes.StringUnicode ---> [nullable longtext] [MaxLength = -1]
             }
         }
 
-        [ConditionalFact]
-        public override async Task Can_insert_and_read_back_non_nullable_backed_data_types()
-        {
-            using (var context = CreateContext())
-            {
-                context.Set<NonNullableBackedDataTypes>().Add(
-                    new NonNullableBackedDataTypes
-                    {
-                        Id = 101,
-                        PartitionId = 101,
-                        Int16 = -1234,
-                        Int32 = -123456789,
-                        Int64 = -1234567890123456789L,
-                        Double = -1.23456789,
-                        Decimal = -1234567890.01M,
-                        DateTime = DateTime.Parse("01/01/2000 12:34:56"),
-                        DateTimeOffset = new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                        TimeSpan = new TimeSpan(0, 10, 9, 8, 7),
-                        Single = -1.234F,
-                        Boolean = true,
-                        Byte = 255,
-                        UnsignedInt16 = 1234,
-                        UnsignedInt32 = 1234565789U,
-                        UnsignedInt64 = 1234567890123456789UL,
-                        Character = 'a',
-                        SignedByte = -128,
-                        Enum64 = Enum64.SomeValue,
-                        Enum32 = Enum32.SomeValue,
-                        Enum16 = Enum16.SomeValue,
-                        Enum8 = Enum8.SomeValue,
-                        EnumU64 = EnumU64.SomeValue,
-                        EnumU32 = EnumU32.SomeValue,
-                        EnumU16 = EnumU16.SomeValue,
-                        EnumS8 = EnumS8.SomeValue
-                    });
-
-                Assert.Equal(1, await context.SaveChangesAsync());
-            }
-
-            using (var context = CreateContext())
-            {
-                var dt = (await context.Set<NonNullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
-
-                var entityType = context.Model.FindEntityType(typeof(NonNullableBackedDataTypes));
-                AssertEqualIfMapped(entityType, (short)-1234, () => dt.Int16);
-                AssertEqualIfMapped(entityType, -123456789, () => dt.Int32);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.Int64);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.Int64);
-                AssertEqualIfMapped(entityType, -1.23456789, () => dt.Double);
-                AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.Decimal);
-                AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56"), () => dt.DateTime);
-                AssertEqualIfMapped(
-                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                    () => dt.DateTimeOffset);
-                AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TimeSpan);
-                AssertEqualIfMapped(entityType, -1.234F, () => dt.Single);
-                AssertEqualIfMapped(entityType, true, () => dt.Boolean);
-                AssertEqualIfMapped(entityType, (byte)255, () => dt.Byte);
-                AssertEqualIfMapped(entityType, Enum64.SomeValue, () => dt.Enum64);
-                AssertEqualIfMapped(entityType, Enum32.SomeValue, () => dt.Enum32);
-                AssertEqualIfMapped(entityType, Enum16.SomeValue, () => dt.Enum16);
-                AssertEqualIfMapped(entityType, Enum8.SomeValue, () => dt.Enum8);
-                AssertEqualIfMapped(entityType, (ushort)1234, () => dt.UnsignedInt16);
-                AssertEqualIfMapped(entityType, 1234565789U, () => dt.UnsignedInt32);
-                AssertEqualIfMapped(entityType, 1234567890123456789UL, () => dt.UnsignedInt64);
-                AssertEqualIfMapped(entityType, 'a', () => dt.Character);
-                AssertEqualIfMapped(entityType, (sbyte)-128, () => dt.SignedByte);
-                AssertEqualIfMapped(entityType, EnumU64.SomeValue, () => dt.EnumU64);
-                AssertEqualIfMapped(entityType, EnumU32.SomeValue, () => dt.EnumU32);
-                AssertEqualIfMapped(entityType, EnumU16.SomeValue, () => dt.EnumU16);
-                AssertEqualIfMapped(entityType, EnumS8.SomeValue, () => dt.EnumS8);
-            }
-        }
-
-        [ConditionalFact]
-        public override async Task Can_insert_and_read_back_nullable_backed_data_types()
-        {
-            using (var context = CreateContext())
-            {
-                context.Set<NullableBackedDataTypes>().Add(
-                    new NullableBackedDataTypes
-                    {
-                        Id = 101,
-                        PartitionId = 101,
-                        Int16 = -1234,
-                        Int32 = -123456789,
-                        Int64 = -1234567890123456789L,
-                        Double = -1.23456789,
-                        Decimal = -1234567890.01M,
-                        DateTime = DateTime.Parse("01/01/2000 12:34:56"),
-                        DateTimeOffset = new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                        TimeSpan = new TimeSpan(0, 10, 9, 8, 7),
-                        Single = -1.234F,
-                        Boolean = false,
-                        Byte = 255,
-                        UnsignedInt16 = 1234,
-                        UnsignedInt32 = 1234565789U,
-                        UnsignedInt64 = 1234567890123456789UL,
-                        Character = 'a',
-                        SignedByte = -128,
-                        Enum64 = Enum64.SomeValue,
-                        Enum32 = Enum32.SomeValue,
-                        Enum16 = Enum16.SomeValue,
-                        Enum8 = Enum8.SomeValue,
-                        EnumU64 = EnumU64.SomeValue,
-                        EnumU32 = EnumU32.SomeValue,
-                        EnumU16 = EnumU16.SomeValue,
-                        EnumS8 = EnumS8.SomeValue
-                    });
-
-                Assert.Equal(1, await context.SaveChangesAsync());
-            }
-
-            using (var context = CreateContext())
-            {
-                var dt = (await context.Set<NullableBackedDataTypes>().Where(ndt => ndt.Id == 101).ToListAsync()).Single();
-
-                var entityType = context.Model.FindEntityType(typeof(NullableBackedDataTypes));
-                AssertEqualIfMapped(entityType, (short)-1234, () => dt.Int16);
-                AssertEqualIfMapped(entityType, -123456789, () => dt.Int32);
-                AssertEqualIfMapped(entityType, -1234567890123456789L, () => dt.Int64);
-                AssertEqualIfMapped(entityType, -1.23456789, () => dt.Double);
-                AssertEqualIfMapped(entityType, -1234567890.01M, () => dt.Decimal);
-                AssertEqualIfMapped(entityType, DateTime.Parse("01/01/2000 12:34:56"), () => dt.DateTime);
-                AssertEqualIfMapped(
-                    entityType, new DateTimeOffset(DateTime.Parse("01/01/2000 12:34:56"), TimeSpan.FromHours(-8.0)),
-                    () => dt.DateTimeOffset);
-                AssertEqualIfMapped(entityType, new TimeSpan(0, 10, 9, 8, 7), () => dt.TimeSpan);
-                AssertEqualIfMapped(entityType, -1.234F, () => dt.Single);
-                AssertEqualIfMapped(entityType, false, () => dt.Boolean);
-                AssertEqualIfMapped(entityType, (byte)255, () => dt.Byte);
-                AssertEqualIfMapped(entityType, Enum64.SomeValue, () => dt.Enum64);
-                AssertEqualIfMapped(entityType, Enum32.SomeValue, () => dt.Enum32);
-                AssertEqualIfMapped(entityType, Enum16.SomeValue, () => dt.Enum16);
-                AssertEqualIfMapped(entityType, Enum8.SomeValue, () => dt.Enum8);
-                AssertEqualIfMapped(entityType, (ushort)1234, () => dt.UnsignedInt16);
-                AssertEqualIfMapped(entityType, 1234565789U, () => dt.UnsignedInt32);
-                AssertEqualIfMapped(entityType, 1234567890123456789UL, () => dt.UnsignedInt64);
-                AssertEqualIfMapped(entityType, 'a', () => dt.Character);
-                AssertEqualIfMapped(entityType, (sbyte)-128, () => dt.SignedByte);
-                AssertEqualIfMapped(entityType, EnumU64.SomeValue, () => dt.EnumU64);
-                AssertEqualIfMapped(entityType, EnumU32.SomeValue, () => dt.EnumU32);
-                AssertEqualIfMapped(entityType, EnumU16.SomeValue, () => dt.EnumU16);
-                AssertEqualIfMapped(entityType, EnumS8.SomeValue, () => dt.EnumS8);
-            }
-        }
-
-        [ConditionalFact]
+        [Fact]
         public override async Task Can_insert_and_read_back_object_backed_data_types()
         {
             using (var context = CreateContext())

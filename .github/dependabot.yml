@@ -1,0 +1,78 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+  ignore:
+    # xunit.v3 4.0.2+ fails test methods with overloads (xunit/xunit#3645). EF Core's
+    # StoredProcedureUpdateTestBase pairs every public abstract X(bool) with a protected
+    # X(bool, string), so stay on 4.0.1 until EF Core or xunit changes that.
+    - dependency-name: "xunit.v3.core"
+      versions: [">= 4.0.2"]
+    - dependency-name: "xunit.v3.assert"
+      versions: [">= 4.0.2"]
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql.Json.Microsoft"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql.Json.Newtonsoft"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/src/EFCore.MySql.NTS"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/test/EFCore.MySql.FunctionalTests"
+  schedule:
+    interval: daily
+  ignore:
+    # xunit.v3 4.0.2+ fails test methods with overloads (xunit/xunit#3645). EF Core's
+    # StoredProcedureUpdateTestBase pairs every public abstract X(bool) with a protected
+    # X(bool, string), so stay on 4.0.1 until EF Core or xunit changes that.
+    - dependency-name: "xunit.v3.core"
+      versions: [">= 4.0.2"]
+    - dependency-name: "xunit.v3.assert"
+      versions: [">= 4.0.2"]
+- package-ecosystem: nuget
+  directory: "/test/EFCore.MySql.IntegrationTests"
+  schedule:
+    interval: daily
+  ignore:
+    # xunit.v3 4.0.2+ fails test methods with overloads (xunit/xunit#3645). EF Core's
+    # StoredProcedureUpdateTestBase pairs every public abstract X(bool) with a protected
+    # X(bool, string), so stay on 4.0.1 until EF Core or xunit changes that.
+    - dependency-name: "xunit.v3.core"
+      versions: [">= 4.0.2"]
+    - dependency-name: "xunit.v3.assert"
+      versions: [">= 4.0.2"]
+- package-ecosystem: nuget
+  directory: "/test/EFCore.MySql.Tests"
+  schedule:
+    interval: daily
+  ignore:
+    # xunit.v3 4.0.2+ fails test methods with overloads (xunit/xunit#3645). EF Core's
+    # StoredProcedureUpdateTestBase pairs every public abstract X(bool) with a protected
+    # X(bool, string), so stay on 4.0.1 until EF Core or xunit changes that.
+    - dependency-name: "xunit.v3.core"
+      versions: [">= 4.0.2"]
+    - dependency-name: "xunit.v3.assert"
+      versions: [">= 4.0.2"]
+- package-ecosystem: nuget
+  directory: "/benchmark/EFCore.MySql.Benchmarks"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/samples/PassKeyTest"
+  schedule:
+    interval: daily
+- package-ecosystem: nuget
+  directory: "/tools/QueryBaselineUpdater"
+  schedule:
+    interval: daily

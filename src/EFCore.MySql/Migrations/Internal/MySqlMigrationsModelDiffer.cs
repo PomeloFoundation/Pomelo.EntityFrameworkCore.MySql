@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Metadata.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
+namespace Microting.EntityFrameworkCore.MySql.Migrations.Internal
 {
     public class MySqlMigrationsModelDiffer : MigrationsModelDiffer
     {
@@ -200,7 +200,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations.Internal
         }
 
         /// <remarks>
-        /// When generating the first migration in Pomelo 5.0+, after previously using Pomelo 3.x, a significant amount of
+        /// When generating the first migration in Microting 5.0+, after previously using Microting 3.x, a significant amount of
         /// AlterColumnOperation might be generated, that don't really need to change anything in the database, because the legacy way of
         /// specifying a character set was used before and now the store type got cleaned-up and a CharSet annotation got added.
         /// This method ensures, that no useless operations get generated for this case.

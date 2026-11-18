@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Tests
+namespace Microting.EntityFrameworkCore.MySql.Tests
 {
     public static class AppConfig
     {

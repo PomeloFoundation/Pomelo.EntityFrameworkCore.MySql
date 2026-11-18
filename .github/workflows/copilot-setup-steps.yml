@@ -1,0 +1,50 @@
+name: "Copilot Setup Steps"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: .NET Information
+        run: dotnet --info
+
+      # The test configuration files are required for the test projects to build.
+      - name: Setup test configuration
+        run: |
+          cp test/EFCore.MySql.FunctionalTests/config.json.example test/EFCore.MySql.FunctionalTests/config.json
+          cp test/EFCore.MySql.IntegrationTests/config.json.example test/EFCore.MySql.IntegrationTests/config.json
+
+      # These steps run before Copilot's firewall is applied, so they can reach package sources that are
+      # otherwise unreachable from the agent environment.
+      # In particular, EF Core's `Microsoft.EntityFrameworkCore.Relational.Specification.Tests` package depends on
+      # `Microsoft.DotNet.XUnitV3Extensions`, which is only published to the `dotnet-eng` Azure DevOps feed. Azure
+      # DevOps serves the actual `.nupkg` content from rotating `*.vsblob.vsassets.io` hosts.
+      # Restoring here populates the local NuGet cache, so that the agent can restore and build offline afterwards.
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Restore NuGet packages
+        run: dotnet restore

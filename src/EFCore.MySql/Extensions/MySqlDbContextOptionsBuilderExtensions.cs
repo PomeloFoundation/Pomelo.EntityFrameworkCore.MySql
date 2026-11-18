@@ -1,10 +1,10 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using System.Data.Common;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -15,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore
 {
     /// <summary>
     /// Provides extension methods on <see cref="DbContextOptionsBuilder"/> and <see cref="DbContextOptionsBuilder{T}"/>
-    /// to configure a <see cref="DbContext"/> to use with MySQL/MariaDB and Pomelo.EntityFrameworkCore.MySql.
+    /// to configure a <see cref="DbContext"/> to use with MySQL/MariaDB and Microting.EntityFrameworkCore.MySql.
     /// </summary>
     public static class MySqlDbContextOptionsBuilderExtensions
     {
@@ -61,8 +61,12 @@ namespace Microsoft.EntityFrameworkCore
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
 
-            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
+
+            // Default to Constant mode for parameterized collections so that list.Contains() generates
+            // IN (val1, val2, ...) instead of individual parameters, which is significantly faster on MySQL.
+            // Users can override this in their mySqlOptionsAction.
+            mySqlDbContextOptionsBuilder.UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -107,8 +111,12 @@ namespace Microsoft.EntityFrameworkCore
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
 
-            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
+
+            // Default to Constant mode for parameterized collections so that list.Contains() generates
+            // IN (val1, val2, ...) instead of individual parameters, which is significantly faster on MySQL.
+            // Users can override this in their mySqlOptionsAction.
+            mySqlDbContextOptionsBuilder.UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -157,8 +165,12 @@ namespace Microsoft.EntityFrameworkCore
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
 
-            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
+
+            // Default to Constant mode for parameterized collections so that list.Contains() generates
+            // IN (val1, val2, ...) instead of individual parameters, which is significantly faster on MySQL.
+            // Users can override this in their mySqlOptionsAction.
+            mySqlDbContextOptionsBuilder.UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -204,8 +216,12 @@ namespace Microsoft.EntityFrameworkCore
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
             ConfigureWarnings(optionsBuilder);
 
-            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+            var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder);
+
+            // Default to Constant mode for parameterized collections so that list.Contains() generates
+            // IN (val1, val2, ...) instead of individual parameters, which is significantly faster on MySQL.
+            // Users can override this in their mySqlOptionsAction.
+            mySqlDbContextOptionsBuilder.UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 

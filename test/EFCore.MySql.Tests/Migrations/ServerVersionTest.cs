@@ -1,10 +1,10 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Storage;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Storage;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Migrations
+namespace Microting.EntityFrameworkCore.MySql.Migrations
 {
     public class ServerVersionTest
     {
@@ -13,6 +13,10 @@ namespace Pomelo.EntityFrameworkCore.MySql.Migrations
         [InlineData("5.5.5-10.1.23-MariaDB-1~jessie", ServerType.MariaDb, "10.1.23", false)]
         [InlineData("5.5.5-10.3.0-MariaDB-10.3.0+maria~jessie", ServerType.MariaDb, "10.3.0", false)]
         [InlineData("5.5.5-1.2.3-myslq~jessie", ServerType.MySql, "5.5.5", false)]
+        [InlineData("10.3.39-MariaDB-0ubuntu0.20.04.2", ServerType.MariaDb, "10.3.39", false)]
+        [InlineData("5.5.5-10.3.39-MariaDB-0ubuntu0.20.04.2", ServerType.MariaDb, "10.3.39", false)]
+        [InlineData("11.8.6-MariaDB-5ubuntu0.1 from Ubuntu", ServerType.MariaDb, "11.8.6", true)]
+        [InlineData("10.5.9-MariaDB", ServerType.MariaDb, "10.5.9", true)]
         [InlineData("version5.0", ServerType.MySql, "5.0", false)]
         [InlineData("5.1", ServerType.MySql, "5.1", false)]
         public void TestValidVersion(string input, ServerType serverType, string actualVersion, bool supportsRenameIndex)

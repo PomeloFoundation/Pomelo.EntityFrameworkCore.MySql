@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Metadata.Internal;
+using Microting.EntityFrameworkCore.MySql.Metadata.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Conventions;
+namespace Microting.EntityFrameworkCore.MySql.Metadata.Conventions;
 
 /// <summary>
 ///     A convention that creates an optimized copy of the mutable model.

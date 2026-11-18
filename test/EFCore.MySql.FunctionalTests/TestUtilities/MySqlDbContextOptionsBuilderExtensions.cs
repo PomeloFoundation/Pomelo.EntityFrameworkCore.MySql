@@ -2,7 +2,7 @@
 
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public static class MySqlDbContextOptionsBuilderExtensions
     {

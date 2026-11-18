@@ -1,12 +1,11 @@
 using System;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class MappingQueryMySqlTest : MappingQueryTestBase<MappingQueryMySqlTest.MappingQueryMySqlFixture>
     {
@@ -17,7 +16,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        [ConditionalFact]
+        [Fact]
         public override void All_customers()
         {
             base.All_customers();
@@ -28,7 +27,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
-        [ConditionalFact]
+        [Fact]
         public override void All_employees()
         {
             base.All_employees();
@@ -39,7 +38,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
-        [ConditionalFact]
+        [Fact]
         public override void All_orders()
         {
             base.All_orders();
@@ -50,7 +49,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Sql);
         }
 
-        [ConditionalFact]
+        [Fact]
         public override void Project_nullable_enum()
         {
             base.Project_nullable_enum();

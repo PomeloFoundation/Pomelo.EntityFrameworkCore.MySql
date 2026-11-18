@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Pomelo.EntityFrameworkCore.TestUtilities
+namespace Microting.EntityFrameworkCore.TestUtilities
 {
     public class BuildFileResult
     {

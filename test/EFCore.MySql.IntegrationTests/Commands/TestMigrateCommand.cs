@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Commands{
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Commands{
 
     public class TestMigrateCommand : ITestMigrateCommand
     {

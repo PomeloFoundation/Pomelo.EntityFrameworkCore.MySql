@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Internal
+namespace Microting.EntityFrameworkCore.MySql.Internal
 {
     /// <summary>
     ///     <para>
@@ -41,60 +41,43 @@ namespace Pomelo.EntityFrameworkCore.MySql.Internal
         }
 
         /// <inheritdoc />
-        protected override void ValidateJsonEntities(
-            IModel model,
-            IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
-        {
-            foreach (var entityType in model.GetEntityTypes())
-            {
-                if (entityType.IsMappedToJson())
-                {
-                    throw new InvalidOperationException(MySqlStrings.Ef7CoreJsonMappingNotSupported);
-                }
-            }
-        }
-
-        /// <inheritdoc />
         protected override void ValidateStoredProcedures(
-            IModel model,
+            IEntityType entityType,
             IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
         {
-            base.ValidateStoredProcedures(model, logger);
+            base.ValidateStoredProcedures(entityType, logger);
 
-            foreach (var entityType in model.GetEntityTypes())
+            if (entityType.GetDeleteStoredProcedure() is { } deleteStoredProcedure)
             {
-                if (entityType.GetDeleteStoredProcedure() is { } deleteStoredProcedure)
-                {
-                    ValidateSproc(deleteStoredProcedure, logger);
-                }
+                ValidateSproc(deleteStoredProcedure, logger);
+            }
 
-                if (entityType.GetInsertStoredProcedure() is { } insertStoredProcedure)
-                {
-                    ValidateSproc(insertStoredProcedure, logger);
-                }
+            if (entityType.GetInsertStoredProcedure() is { } insertStoredProcedure)
+            {
+                ValidateSproc(insertStoredProcedure, logger);
+            }
 
-                if (entityType.GetUpdateStoredProcedure() is { } updateStoredProcedure)
-                {
-                    ValidateSproc(updateStoredProcedure, logger);
-                }
+            if (entityType.GetUpdateStoredProcedure() is { } updateStoredProcedure)
+            {
+                ValidateSproc(updateStoredProcedure, logger);
             }
 
             static void ValidateSproc(IStoredProcedure sproc, IDiagnosticsLogger<DbLoggerCategory.Model.Validation> logger)
             {
-                var entityType = sproc.EntityType;
+                var sprocEntityType = sproc.EntityType;
                 var storeObjectIdentifier = sproc.GetStoreIdentifier();
 
                 if (sproc.ResultColumns.Any())
                 {
                     throw new InvalidOperationException(MySqlStrings.StoredProcedureResultColumnsNotSupported(
-                        entityType.DisplayName(),
+                        sprocEntityType.DisplayName(),
                         storeObjectIdentifier.DisplayName()));
                 }
 
                 if (sproc.IsRowsAffectedReturned)
                 {
                     throw new InvalidOperationException(MySqlStrings.StoredProcedureReturnValueNotSupported(
-                        entityType.DisplayName(),
+                        sprocEntityType.DisplayName(),
                         storeObjectIdentifier.DisplayName()));
                 }
             }

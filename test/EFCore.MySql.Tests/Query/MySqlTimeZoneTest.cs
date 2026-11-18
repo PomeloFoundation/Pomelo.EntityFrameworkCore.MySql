@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query
+namespace Microting.EntityFrameworkCore.MySql.Query
 {
     public sealed class MySqlTimeZoneTest : TestWithFixture<MySqlTimeZoneTest.MySqlTimeZoneFixture>
     {
@@ -12,7 +12,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query
         {
         }
 
-        [ConditionalFact]
+        [Fact]
         public void ConvertTimeZone()
         {
             using var context = Fixture.CreateContext();
@@ -52,7 +52,7 @@ LIMIT 2
                 Fixture.Sql);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void DateTimeOffset_LocalDateTime()
         {
             using var context = Fixture.CreateContext();

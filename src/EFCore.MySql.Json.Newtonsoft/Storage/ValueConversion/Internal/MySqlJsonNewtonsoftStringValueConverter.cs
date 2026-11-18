@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 // ReSharper disable once CheckNamespace
-namespace Pomelo.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueConversion.Internal
+namespace Microting.EntityFrameworkCore.MySql.Json.Newtonsoft.Storage.ValueConversion.Internal
 {
     public class MySqlJsonNewtonsoftStringValueConverter : ValueConverter<string, string>
     {

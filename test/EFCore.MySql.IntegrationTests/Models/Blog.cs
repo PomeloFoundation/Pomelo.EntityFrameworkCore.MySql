@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
     public class Blog
     {

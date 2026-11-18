@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
+using Microsoft.EntityFrameworkCore.BulkUpdates.Inheritance;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPCInheritanceBulkUpdatesMySqlTest : TPCInheritanceBulkUpdatesTestBase<TPCInheritanceBulkUpdatesMySqlFixture>
 {
@@ -17,7 +17,7 @@ public class TPCInheritanceBulkUpdatesMySqlTest : TPCInheritanceBulkUpdatesTestB
         ClearLog();
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
@@ -127,8 +127,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -148,8 +150,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM (
@@ -207,8 +211,10 @@ FROM `Kiwi` AS `k`
 """,
                 //
                 """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`Name` = 'SomeOtherKiwi'
+SET `k`.`Name` = @p
 """,
                 //
                 """
@@ -228,8 +234,10 @@ FROM `Kiwi` AS `k`
 """,
                 //
                 """
+@p='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0
+SET `k`.`FoundOn` = @p
 """,
                 //
                 """
@@ -249,9 +257,12 @@ FROM `Kiwi` AS `k`
 """,
                 //
                 """
+@p='Kiwi' (Size = 4000)
+@p1='0'
+
 UPDATE `Kiwi` AS `k`
-SET `k`.`FoundOn` = 0,
-    `k`.`Name` = 'Kiwi'
+SET `k`.`Name` = @p,
+    `k`.`FoundOn` = @p1
 """,
                 //
                 """
@@ -265,18 +276,20 @@ FROM `Kiwi` AS `k`
         await base.Update_with_interface_in_property_expression(async);
 
         AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
+            """
+SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`Ints`, `c`.`SugarGrams`, `c`.`ComplexTypeCollection`, `c`.`ParentComplexType_Int`, `c`.`ParentComplexType_UniqueInt`, `c`.`ParentComplexType_Nested_NestedInt`, `c`.`ParentComplexType_Nested_UniqueInt`, `c`.`ChildComplexType_Int`, `c`.`ChildComplexType_UniqueInt`, `c`.`ChildComplexType_Nested_NestedInt`, `c`.`ChildComplexType_Nested_UniqueInt`
 FROM `Coke` AS `c`
 """,
-                //
-                """
+            //
+            """
+@p='0'
+
 UPDATE `Coke` AS `c`
-SET `c`.`SugarGrams` = 0
+SET `c`.`SugarGrams` = @p
 """,
-                //
-                """
-SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
+            //
+            """
+SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`Ints`, `c`.`SugarGrams`, `c`.`ComplexTypeCollection`, `c`.`ParentComplexType_Int`, `c`.`ParentComplexType_UniqueInt`, `c`.`ParentComplexType_Nested_NestedInt`, `c`.`ParentComplexType_Nested_UniqueInt`, `c`.`ChildComplexType_Int`, `c`.`ChildComplexType_UniqueInt`, `c`.`ChildComplexType_Nested_NestedInt`, `c`.`ChildComplexType_Nested_UniqueInt`
 FROM `Coke` AS `c`
 """);
     }
@@ -286,18 +299,20 @@ FROM `Coke` AS `c`
         await base.Update_with_interface_in_EF_Property_in_property_expression(async);
 
         AssertSql(
-"""
-SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
+            """
+SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`Ints`, `c`.`SugarGrams`, `c`.`ComplexTypeCollection`, `c`.`ParentComplexType_Int`, `c`.`ParentComplexType_UniqueInt`, `c`.`ParentComplexType_Nested_NestedInt`, `c`.`ParentComplexType_Nested_UniqueInt`, `c`.`ChildComplexType_Int`, `c`.`ChildComplexType_UniqueInt`, `c`.`ChildComplexType_Nested_NestedInt`, `c`.`ChildComplexType_Nested_UniqueInt`
 FROM `Coke` AS `c`
 """,
-                //
-                """
+            //
+            """
+@p='0'
+
 UPDATE `Coke` AS `c`
-SET `c`.`SugarGrams` = 0
+SET `c`.`SugarGrams` = @p
 """,
-                //
-                """
-SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`SugarGrams`
+            //
+            """
+SELECT `c`.`Id`, `c`.`SortIndex`, `c`.`CaffeineGrams`, `c`.`CokeCO2`, `c`.`Ints`, `c`.`SugarGrams`, `c`.`ComplexTypeCollection`, `c`.`ParentComplexType_Int`, `c`.`ParentComplexType_UniqueInt`, `c`.`ParentComplexType_Nested_NestedInt`, `c`.`ParentComplexType_Nested_UniqueInt`, `c`.`ChildComplexType_Int`, `c`.`ChildComplexType_UniqueInt`, `c`.`ChildComplexType_Nested_NestedInt`, `c`.`ChildComplexType_Nested_UniqueInt`
 FROM `Coke` AS `c`
 """);
     }

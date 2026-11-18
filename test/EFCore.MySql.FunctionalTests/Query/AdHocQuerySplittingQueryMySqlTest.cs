@@ -3,13 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBase
 {
+    public AdHocQuerySplittingQueryMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override DbContextOptionsBuilder SetQuerySplittingBehavior(
         DbContextOptionsBuilder optionsBuilder,
         QuerySplittingBehavior splittingBehavior)
@@ -36,9 +41,16 @@ public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBas
         return optionsBuilder;
     }
 
+    protected override TestStore CreateTestStore25225()
+    {
+        var testStore = MySqlTestStore.Create(NonSharedStoreName);
+        testStore.UseConnectionString = true;
+        return testStore;
+    }
+
     private static readonly FieldInfo _querySplittingBehaviorFieldInfo =
         typeof(RelationalOptionsExtension).GetField("_querySplittingBehavior", BindingFlags.NonPublic | BindingFlags.Instance);
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

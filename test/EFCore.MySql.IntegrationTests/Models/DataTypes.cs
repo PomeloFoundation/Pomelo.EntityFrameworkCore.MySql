@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests.Models
 {
 	public class DataTypesSimple
 	{

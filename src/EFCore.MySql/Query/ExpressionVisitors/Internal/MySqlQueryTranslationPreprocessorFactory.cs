@@ -1,9 +1,9 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
+namespace Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
 public class MySqlQueryTranslationPreprocessorFactory : IQueryTranslationPreprocessorFactory
 {

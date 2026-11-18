@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using Xunit.Abstractions;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class CompositeKeysQueryMySqlTest : CompositeKeysQueryRelationalTestBase<CompositeKeysQueryMySqlFixture>
     {

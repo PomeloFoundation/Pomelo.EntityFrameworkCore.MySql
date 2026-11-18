@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Xunit.Abstractions;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class NorthwindAsNoTrackingQueryMySqlTest : NorthwindAsNoTrackingQueryTestBase<
         NorthwindQueryMySqlFixture<NoopModelCustomizer>>

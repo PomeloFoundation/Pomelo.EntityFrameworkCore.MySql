@@ -1,10 +1,10 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Metadata.Internal
+namespace Microting.EntityFrameworkCore.MySql.Metadata.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

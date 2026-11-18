@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     /// <summary>
     /// Based on the MigrationsInfrastructureTestBase implementation.
@@ -30,7 +30,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
         protected virtual void SetSql(string value)
             => Sql = value.Replace(ProductInfo.GetVersion(), "7.0.0-test");
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Can_create_stored_procedure_script_without_custom_delimiter_statements()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationPrimaryKeyChangeContext>(
@@ -50,7 +50,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
                     toMigration: "00000000000002_MigrationPrimaryKeyChange2"));
 
             // TODO: 9.0
-            // Pomelo helper stored procedure statements should be inside the transaction scope.
+            // Microting helper stored procedure statements should be inside the transaction scope.
             Assert.Equal(
 """
 CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
@@ -69,6 +69,9 @@ CREATE TABLE `Table1` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_MigrationPrimaryKeyChange1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -164,7 +167,7 @@ COMMIT;
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Can_generate_idempotent_up_scripts_with_primary_key_related_stored_procedures()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationPrimaryKeyChangeContext>();
@@ -311,6 +314,9 @@ DELIMITER ;
 CALL MigrationsScript();
 DROP PROCEDURE MigrationsScript;
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS MigrationsScript;
 DELIMITER //
 CREATE PROCEDURE MigrationsScript()
@@ -368,7 +374,7 @@ DROP PROCEDURE `POMELO_AFTER_ADD_PRIMARY_KEY`;
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Alter_column_change_primary_key_will_not_try_to_declare_default_value_in_sql()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationPrimaryKeyChangeFromStringToIntContext>(
@@ -401,6 +407,9 @@ CREATE TABLE `IceCreams` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_Migration1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))
 BEGIN
@@ -495,7 +504,7 @@ COMMIT;
                 ignoreLineEndingDifferences: true);
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual void Drop_primary_key_with_recreating_foreign_keys()
         {
             using var db = Fixture.CreateContext<FullInfrastructureMigrationsFixture.MigrationDropPrimaryKeyWithRecreatingForeignKeysContext>();
@@ -547,6 +556,9 @@ CREATE TABLE `FooBar` (
 INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
 VALUES ('00000000000001_MigrationDropPrimaryKeyWithRecreatingForeignKeys1', '7.0.0-test');
 
+COMMIT;
+
+START TRANSACTION;
 DROP PROCEDURE IF EXISTS `POMELO_BEFORE_DROP_PRIMARY_KEY`;
 DELIMITER //
 CREATE PROCEDURE `POMELO_BEFORE_DROP_PRIMARY_KEY`(IN `SCHEMA_NAME_ARGUMENT` VARCHAR(255), IN `TABLE_NAME_ARGUMENT` VARCHAR(255))

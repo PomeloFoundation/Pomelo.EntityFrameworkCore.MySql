@@ -1,4 +1,4 @@
-// Copyright (c) Pomelo Foundation. All rights reserved.
+// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal;
+namespace Microting.EntityFrameworkCore.MySql.Update.Internal;
 
 /// <summary>
 ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -43,21 +43,6 @@ public class MySqlModificationCommandBatch : AffectedCountModificationCommandBat
         {
             _pendingBulkInsertCommands.RemoveAt(_pendingBulkInsertCommands.Count - 1);
         }
-
-        //////
-        // Pulled up from the base implementation to support our _pendingParameters field:
-
-        for (var i = 0; i < _pendingParameters; i++)
-        {
-            var parameterIndex = RelationalCommandBuilder.Parameters.Count - 1;
-            var parameter = RelationalCommandBuilder.Parameters[parameterIndex];
-
-            RelationalCommandBuilder.RemoveParameterAt(parameterIndex);
-            ParameterValues.Remove(parameter.InvariantName);
-        }
-
-        //
-        //////
 
         base.RollbackLastCommand(modificationCommand);
     }
@@ -135,6 +120,11 @@ public class MySqlModificationCommandBatch : AffectedCountModificationCommandBat
         ApplyPendingBulkInsertCommands();
 
         base.Complete(moreBatchesExpected);
+
+        // DEBUG: Log the complete SQL command
+        // var sqlText = SqlBuilder.ToString();
+        // Console.WriteLine($"[DEBUG SQL COMPLETE] SQL Text Length: {sqlText.Length}");
+        // Console.WriteLine($"[DEBUG SQL COMPLETE] SQL Text: {sqlText}");
     }
 
     /// <summary>

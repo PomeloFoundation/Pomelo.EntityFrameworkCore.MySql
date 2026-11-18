@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ModelBuilding;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.ModelBuilding;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.ModelBuilding;
 
 public class MySqlModelBuilderGenericTest : MySqlModelBuilderTestBase
 {
@@ -62,6 +62,13 @@ public class MySqlModelBuilderGenericTest : MySqlModelBuilderTestBase
         public override void Can_use_sproc_mapping_with_owned_reference()
             => Assert.Throws<InvalidOperationException>(() => base.Can_use_sproc_mapping_with_owned_reference());
 
+        protected override TestModelBuilder CreateModelBuilder(
+            Action<ModelConfigurationBuilder> configure)
+            => new ModelBuilderTest.GenericTestModelBuilder(Fixture, configure);
+    }
+
+    public class MySqlGenericComplexCollection(MySqlModelBuilderFixture fixture) : MySqlComplexCollection(fixture)
+    {
         protected override TestModelBuilder CreateModelBuilder(
             Action<ModelConfigurationBuilder> configure)
             => new ModelBuilderTest.GenericTestModelBuilder(Fixture, configure);

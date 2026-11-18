@@ -1,9 +1,9 @@
-﻿using Pomelo.EntityFrameworkCore.MySql.IntegrationTests.Models;
+﻿using Microting.EntityFrameworkCore.MySql.IntegrationTests.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Pomelo.EntityFrameworkCore.MySql.IntegrationTests
+namespace Microting.EntityFrameworkCore.MySql.IntegrationTests
 {
     public class AppDb : IdentityDbContext<AppIdentityUser>
     {

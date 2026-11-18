@@ -7,14 +7,19 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.EntityFrameworkCore.Update;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Internal;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Update;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Update;
 
 public class StoredProcedureUpdateMySqlTest : StoredProcedureUpdateTestBase
 {
+    public StoredProcedureUpdateMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     public override async Task Insert_with_output_parameter(bool async)
     {
         await base.Insert_with_output_parameter(
@@ -540,7 +545,7 @@ BEGIN
 END
 """;
 
-        var contextFactory = await InitializeAsync<DbContext>(
+        var contextFactory = await InitializeNonSharedTest<DbContext>(
             modelBuilder =>
             {
                 modelBuilder.Entity<Parent>().UseTpcMappingStrategy();
@@ -562,7 +567,7 @@ END
                     builder.Ignore(RelationalEventId.TpcStoreGeneratedIdentityWarning)); // <-- added
             });
 
-        await using var context = contextFactory.CreateContext();
+        await using var context = contextFactory.CreateDbContext();
 
         var entity1 = new Child1 { Name = "Child", Child1Property = 8 };
         context.Set<Child1>().Add(entity1);
@@ -646,6 +651,6 @@ SELECT @_out_p4;
     protected override void ConfigureStoreGeneratedConcurrencyToken(EntityTypeBuilder entityTypeBuilder, string propertyName)
         => entityTypeBuilder.Property<byte[]>(propertyName).IsRowVersion();
 
-    protected override ITestStoreFactory TestStoreFactory
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 }

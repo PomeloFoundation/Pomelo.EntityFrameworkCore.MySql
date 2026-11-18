@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
-using Xunit.Abstractions;
+using Xunit;
+using Microsoft.EntityFrameworkCore.Query.Inheritance;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class TPTManyToManyQueryMySqlTest : TPTManyToManyQueryRelationalTestBase<TPTManyToManyQueryMySqlFixture>
     {

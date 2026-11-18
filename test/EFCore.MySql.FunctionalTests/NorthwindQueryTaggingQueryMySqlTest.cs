@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
-using Xunit.Abstractions;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.Query;
+using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests
 {
     internal class NorthwindQueryTaggingQueryMySqlTest : NorthwindQueryTaggingQueryTestBase<NorthwindQueryMySqlFixture<NoopModelCustomizer>>
     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Pomelo Foundation. All rights reserved.
+﻿// Copyright (c) Microting. All rights reserved.
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
+using Microting.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal;
 
-namespace Pomelo.EntityFrameworkCore.MySql.Query.Expressions.Internal
+namespace Microting.EntityFrameworkCore.MySql.Query.Expressions.Internal
 {
     public class MySqlMatchExpression : SqlExpression
     {

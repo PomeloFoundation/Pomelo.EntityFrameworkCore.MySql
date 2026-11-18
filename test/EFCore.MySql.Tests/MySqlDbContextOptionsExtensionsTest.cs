@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.TestModels.ConferencePlanner;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Internal;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Infrastructure.Internal;
+using Microting.EntityFrameworkCore.MySql.Internal;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql
+namespace Microting.EntityFrameworkCore.MySql
 {
     public class MySqlDbContextOptionsBuilderExtensionsTest
     {
@@ -328,7 +328,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal("mysql", mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_connection_string(bool async)
@@ -350,7 +350,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_connection_closed(bool async)
@@ -373,7 +373,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_connection_opened(bool async)
@@ -406,7 +406,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal(serverVersion.TypeIdentifier, mySqlOptions.ServerVersion.TypeIdentifier);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task UseMySql_with_ServerVersion_AutoDetect_datasource(bool async)
@@ -456,7 +456,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
             Assert.Equal(MySqlBooleanType.Bit1, mySqlOptions.DefaultDataTypeMappings.ClrBoolean);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void Service_collection_extension_method_can_configure_provider_options(bool nullConnectionString)

@@ -1,18 +1,25 @@
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class NonSharedModelBulkUpdatesMySqlTest : NonSharedModelBulkUpdatesRelationalTestBase
 {
-    protected override ITestStoreFactory TestStoreFactory
+    public NonSharedModelBulkUpdatesMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
+    protected override ITestStoreFactory NonSharedTestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
-    [ConditionalFact]
+    [Fact]
     public virtual void Check_all_tests_overridden()
         => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
@@ -64,8 +71,10 @@ WHERE `b`.`Title` LIKE 'Arthur%'
 
         AssertSql(
 """
+@p='SomeValue' (Size = 4000)
+
 UPDATE `Owner` AS `o`
-SET `o`.`Title` = 'SomeValue'
+SET `o`.`Title` = @p
 """);
     }
 
@@ -87,8 +96,8 @@ SET `o`.`Title` = CONCAT(COALESCE(`o`.`Title`, ''), '_Suffix')
         AssertSql(
 """
 UPDATE `Owner` AS `o`
-SET `o`.`OwnedReference_Number` = CHAR_LENGTH(`o`.`Title`),
-    `o`.`Title` = COALESCE(CAST(`o`.`OwnedReference_Number` AS char), '')
+SET `o`.`Title` = COALESCE(CAST(`o`.`OwnedReference_Number` AS char), ''),
+    `o`.`OwnedReference_Number` = CHAR_LENGTH(`o`.`Title`)
 """);
     }
 
@@ -111,8 +120,8 @@ SET `b`.`CreationTimestamp` = TIMESTAMP '2020-01-01 00:00:00'
 """
 UPDATE `Blogs` AS `b`
 INNER JOIN `BlogsPart1` AS `b0` ON `b`.`Id` = `b0`.`Id`
-SET `b0`.`Rating` = CHAR_LENGTH(`b0`.`Title`),
-    `b0`.`Title` = CAST(`b0`.`Rating` AS char)
+SET `b0`.`Title` = CAST(`b0`.`Rating` AS char),
+    `b0`.`Rating` = CHAR_LENGTH(`b0`.`Title`)
 """);
     }
 
@@ -120,11 +129,12 @@ SET `b0`.`Rating` = CHAR_LENGTH(`b0`.`Title`),
     {
         await base.Delete_entity_with_auto_include(async);
 
+        // EF Core 11 prunes the auto-included LEFT JOIN, because the joined table is not
+        // referenced by the DELETE.
         AssertSql(
 """
 DELETE `c`
 FROM `Context30572_Principal` AS `c`
-LEFT JOIN `Context30572_Dependent` AS `c0` ON `c`.`DependentId` = `c0`.`Id`
 """);
     }
 
@@ -152,9 +162,11 @@ WHERE `o`.`Id` = 1
 
         AssertSql(
 """
+@p='NewValue' (Size = 4000)
+
 UPDATE `Owner` AS `o`
 INNER JOIN `Owner` AS `o0` ON `o`.`Id` = `o0`.`Id`
-SET `o`.`Title` = 'NewValue'
+SET `o`.`Title` = @p
 """);
     }
 
@@ -164,9 +176,63 @@ SET `o`.`Title` = 'NewValue'
 
         AssertSql(
 """
+@p='SomeValue' (Size = 4000)
+
 UPDATE `Owner` AS `o`
 INNER JOIN `OwnedCollection` AS `o0` ON `o`.`Id` = `o0`.`OwnerId`
-SET `o0`.`Value` = 'SomeValue'
+SET `o0`.`Value` = @p
+""");
+    }
+
+    public override async Task Delete_with_view_mapping(bool async)
+    {
+        await base.Delete_with_view_mapping(async);
+
+        AssertSql(
+"""
+DELETE `b`
+FROM `Blogs` AS `b`
+""");
+    }
+
+    public override async Task Update_with_view_mapping(bool async)
+    {
+        await base.Update_with_view_mapping(async);
+
+        AssertSql(
+"""
+@p='Updated' (Size = 4000)
+
+UPDATE `Blogs` AS `b`
+SET `b`.`Data` = @p
+""");
+    }
+
+    public override async Task Update_complex_type_with_view_mapping(bool async)
+    {
+        await base.Update_complex_type_with_view_mapping(async);
+
+        AssertSql(
+            """
+@complex_type_p_Prop1='3' (Nullable = true)
+@complex_type_p_Prop2='4' (Nullable = true)
+
+UPDATE `Blogs` AS `b`
+SET `b`.`ComplexThing_Prop1` = @complex_type_p_Prop1,
+    `b`.`ComplexThing_Prop2` = @complex_type_p_Prop2
+""");
+    }
+
+    public override async Task Update_complex_type_property_with_view_mapping(bool async)
+    {
+        await base.Update_complex_type_property_with_view_mapping(async);
+
+        AssertSql(
+            """
+@p='6'
+
+UPDATE `Blogs` AS `b`
+SET `b`.`ComplexThing_Prop1` = @p
 """);
     }
 

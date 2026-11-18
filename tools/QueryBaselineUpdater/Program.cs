@@ -24,7 +24,7 @@ namespace QueryBaselineUpdater
 
             foreach (var file in Regex.Matches(
                              File.ReadAllText(queryBaselineFilePath),
-                             $@"(?:^|\n)(?<Id>(?<Name>(?:Pomelo|EntityFrameworkCore|Microsoft)[^\r\n]*)\([^\r\n]*\) : (?<Line>\d+))\r?\n(?<AssertSql>{AssertSqlPattern})\r?\n(?<Truncated>Output truncated.)?\r?\n--------------------(?=\r?\n)",
+                             $@"(?:^|\n)(?<Id>(?<Name>(?:Microting|EntityFrameworkCore|Microsoft)[^\r\n]*)\([^\r\n]*\) : (?<Line>\d+))\r?\n(?<AssertSql>{AssertSqlPattern})\r?\n(?<Truncated>Output truncated.)?\r?\n--------------------(?=\r?\n)",
                              RegexOptions.IgnoreCase | RegexOptions.Singleline)
                          .Select(
                              match => new AssertSqlChunk(
@@ -36,7 +36,7 @@ namespace QueryBaselineUpdater
                                              Regex.Replace(
                                                  Regex.Replace(
                                                      match.Groups["Name"].Value,
-                                                     @"^Pomelo\.EntityFrameworkCore\.MySql\.FunctionalTests\.",
+                                                     @"^Microting\.EntityFrameworkCore\.MySql\.FunctionalTests\.",
                                                      string.Empty),
                                                  @"\.[^.]+$",
                                                  string.Empty),

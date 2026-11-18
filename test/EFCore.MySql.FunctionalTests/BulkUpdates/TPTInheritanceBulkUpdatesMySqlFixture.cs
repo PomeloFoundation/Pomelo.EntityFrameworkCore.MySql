@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microsoft.EntityFrameworkCore.BulkUpdates.Inheritance;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.BulkUpdates;
 
 public class TPTInheritanceBulkUpdatesMySqlFixture : TPTInheritanceBulkUpdatesFixture
 {

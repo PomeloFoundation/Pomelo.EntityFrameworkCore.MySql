@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Pomelo.EntityFrameworkCore.TestUtilities
+namespace Microting.EntityFrameworkCore.TestUtilities
 {
     public class BuildSource
     {

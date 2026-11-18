@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsTestProject>false</IsTestProject>
+    <IsBenchmarkProject>true</IsBenchmarkProject>
+  </PropertyGroup>
+
+</Project>

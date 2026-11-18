@@ -7,12 +7,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.TestModels.MusicStore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
+using Microting.EntityFrameworkCore.MySql.Infrastructure;
+using Microting.EntityFrameworkCore.MySql.Tests;
 using Xunit;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public abstract class EscapesMySqlTestBase<TFixture> : IClassFixture<TFixture>
         where TFixture : EscapesMySqlTestBase<TFixture>.EscapesMySqlFixtureBase, new()
@@ -23,7 +23,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             fixture.ListLoggerFactory.Clear();
         }
 
-        [ConditionalFact]
+        [Fact]
         public virtual async Task Input_query_escapes_parameter()
         {
             await ExecuteWithStrategyInTransactionAsync(
@@ -44,7 +44,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 });
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_query_escapes_literal(bool async)
         {
@@ -60,7 +60,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_query_escapes_parameter(bool async)
         {
@@ -78,7 +78,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(IsAsyncData))]
         public virtual async Task Where_contains_query_escapes(bool async)
         {

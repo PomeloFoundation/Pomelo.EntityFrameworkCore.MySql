@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Tests;
+using Microting.EntityFrameworkCore.MySql.Tests;
 
-namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
+namespace Microting.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 {
     public class MySqlTestStoreFactory : RelationalTestStoreFactory
     {
