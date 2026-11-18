@@ -26,18 +26,19 @@ The following versions of MySqlConnector, EF Core, .NET (Core), .NET Standard an
 
 Release | Branch                                                                                           | MySqlConnector     | EF Core | .NET (Core) | .NET Standard | .NET Framework
 --- |--------------------------------------------------------------------------------------------------|--------------------|:-------:|:-----------:| :---: | :---:
-[11.0.0-preview.1](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/11.0.0-preview.1) | [net11](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/net11)       | >= 2.5.0           |  11.0.x  |    11.0+     | - | -
-[10.0.14](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.14) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.6.2           |  10.0.14–10.0.999  |    10.0+     | - | -
-[10.0.13](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.13) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.12](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.12) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.11](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.11) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.10](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.10) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.8](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.8) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.7](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.7) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.6](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.6) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.5](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.5) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[10.0.3](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.3) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
-[9.0.8](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/9.0.8) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 2.4.0           |  9.0.x  |    9.0+     | - | -
+[11.0.0](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/11.0.0) | [master](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/master)       | >= 3.0.0           |  11.0.x  |    11.0+     | - | -
+[11.0.0-preview.1](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/11.0.0-preview.1) | [v11.0.0-preview.1](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v11.0.0-preview.1)       | >= 2.5.0           |  11.0.x  |    11.0+     | - | -
+[10.0.14](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.14) | [v10.0.14](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.14)       | >= 2.6.2           |  10.0.14–10.0.999  |    10.0+     | - | -
+[10.0.13](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.13) | [v10.0.13](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.13)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.12](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.12) | [v10.0.12](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.12)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.11](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.11) | [v10.0.11](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.11)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.10](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.10) | [v10.0.10](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.10)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.8](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.8) | [v10.0.8](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.8)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.7](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.7) | [v10.0.7](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.7)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.6](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.6) | [v10.0.6](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.6)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.5](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.5) | [v10.0.5](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.5)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[10.0.3](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/10.0.3) | [v10.0.3](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v10.0.3)       | >= 2.5.0           |  10.0.x  |    10.0+     | - | -
+[9.0.8](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/9.0.8) | [v9.0.8](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/v9.0.8)       | >= 2.4.0           |  9.0.x  |    9.0+     | - | -
 [8.0.3](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/8.0.3) | [8.0-maint](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/8.0-maint) | >= 2.3.5           |  8.0.x  |    8.0+     | - | -
 [7.0.0](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/7.0.0) | [7.0-maint](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/7.0-maint) | >= 2.2.5           |  7.0.x  |    6.0+     | - | -
 [6.0.3](https://www.nuget.org/packages/Microting.EntityFrameworkCore.MySql/6.0.3) | [6.0-maint](https://github.com/microting/Pomelo.EntityFrameworkCore.MySql/tree/6.0-maint) | >= 2.1.2           |  6.0.x  |    6.0+     | - | -
@@ -74,8 +75,18 @@ The codebase is prepared for EF Core 10 upgrade when .NET 10 becomes available, 
 
 Currently tested versions are:
 
-- MySQL 8.4
+- MySQL 9.5
+- MySQL 9.4
+- MySQL 9.3
+- MySQL 9.2
+- MySQL 9.1
+- MySQL 9.0
+- MySQL 8.4 (LTS)
 - MySQL 8.0
+- MariaDB 12.1
+- MariaDB 12.0
+- MariaDB 11.8 (LTS)
+- MariaDB 11.7
 - MariaDB 11.6
 - MariaDB 11.5
 - MariaDB 11.4 (LTS)
@@ -88,6 +99,7 @@ Currently tested versions are:
 
 Milestone | Status   | Release Date
 ----------|----------|-------------
+11.0.0 | Released | 2026-11-17
 10.0.14 | Released | 2026-10-29
 10.0.13 | Released | 2026-10-15
 10.0.12 | Released | 2026-09-17
@@ -132,7 +144,7 @@ All `.pdb` files use Source Link.
 Ensure that your `.csproj` file contains the following reference:
 
 ```xml
-<PackageReference Include="Microting.EntityFrameworkCore.MySql" Version="10.0.14" />
+<PackageReference Include="Microting.EntityFrameworkCore.MySql" Version="11.0.0" />
 ```
 
 ### 2. Services Configuration
