@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
@@ -8,6 +10,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class ToSqlQueryMySqlTest : ToSqlQueryTestBase
 {
+    public ToSqlQueryMySqlTest([NotNull] NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 

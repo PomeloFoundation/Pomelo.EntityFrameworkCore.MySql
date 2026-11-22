@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
@@ -11,6 +12,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class AdHocQueryFiltersQueryMySqlTest : AdHocQueryFiltersQueryRelationalTestBase
 {
+    public AdHocQueryFiltersQueryMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     public override async Task Group_by_multiple_aggregate_joining_different_tables(bool async)
     {
         if (!AppConfig.ServerVersion.Supports.OuterReferenceInMultiLevelSubquery)

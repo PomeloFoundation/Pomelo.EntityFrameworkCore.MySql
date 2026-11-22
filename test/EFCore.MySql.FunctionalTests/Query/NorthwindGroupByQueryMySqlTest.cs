@@ -134,9 +134,11 @@ ORDER BY `c`.`CustomerID`
             await base.GroupBy_group_Distinct_Select_Distinct_aggregate(async);
 
             AssertSql(
-                @"SELECT `o`.`CustomerID` AS `Key`, MAX(DISTINCT (`o`.`OrderDate`)) AS `Max`
+"""
+SELECT `o`.`CustomerID` AS `Key`, MAX(`o`.`OrderDate`) AS `Max`
 FROM `Orders` AS `o`
-GROUP BY `o`.`CustomerID`");
+GROUP BY `o`.`CustomerID`
+""");
         }
 
         public override async Task GroupBy_Property_Select_Average(bool async)
@@ -1012,11 +1014,11 @@ GROUP BY `o0`.`Key`
 
             AssertSql(
 """
-@__a_0='2'
+@a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`, MIN(`o0`.`OrderID`) AS `Min`, `o0`.`Key`, MAX(`o0`.`OrderID`) AS `Max`, AVG(CAST(`o0`.`OrderID` AS double)) AS `Avg`
 FROM (
-    SELECT `o`.`OrderID`, @__a_0 AS `Key`
+    SELECT `o`.`OrderID`, @a AS `Key`
     FROM `Orders` AS `o`
 ) AS `o0`
 GROUP BY `o0`.`Key`
@@ -1029,11 +1031,11 @@ GROUP BY `o0`.`Key`
 
             AssertSql(
 """
-@__a_0='2'
+@a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`
 FROM (
-    SELECT `o`.`OrderID`, @__a_0 AS `Key`
+    SELECT `o`.`OrderID`, @a AS `Key`
     FROM `Orders` AS `o`
 ) AS `o0`
 GROUP BY `o0`.`Key`
@@ -1046,11 +1048,11 @@ GROUP BY `o0`.`Key`
 
             AssertSql(
 """
-@__a_0='2'
+@a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`
 FROM (
-    SELECT `o`.`OrderID`, @__a_0 AS `Key`
+    SELECT `o`.`OrderID`, @a AS `Key`
     FROM `Orders` AS `o`
 ) AS `o0`
 GROUP BY `o0`.`Key`
@@ -1063,11 +1065,11 @@ GROUP BY `o0`.`Key`
 
             AssertSql(
 """
-@__a_0='2'
+@a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`
 FROM (
-    SELECT `o`.`OrderID`, @__a_0 AS `Key`
+    SELECT `o`.`OrderID`, @a AS `Key`
     FROM `Orders` AS `o`
 ) AS `o0`
 GROUP BY `o0`.`Key`
@@ -1080,11 +1082,11 @@ GROUP BY `o0`.`Key`
 
             AssertSql(
 """
-@__a_0='2'
+@a='2'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0) AS `Sum`, `o0`.`Key`
 FROM (
-    SELECT `o`.`OrderID`, @__a_0 AS `Key`
+    SELECT `o`.`OrderID`, @a AS `Key`
     FROM `Orders` AS `o`
 ) AS `o0`
 GROUP BY `o0`.`Key`
@@ -1463,14 +1465,14 @@ GROUP BY `o`.`CustomerID`
 
             AssertSql(
 """
-@__p_0='80'
+@p='80'
 
 SELECT AVG(CAST(`o0`.`OrderID` AS double))
 FROM (
     SELECT `o`.`OrderID`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     ORDER BY `o`.`OrderID`
-    LIMIT 18446744073709551610 OFFSET @__p_0
+    LIMIT 18446744073709551610 OFFSET @p
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -1482,14 +1484,14 @@ GROUP BY `o0`.`CustomerID`
 
             AssertSql(
 """
-@__p_0='500'
+@p='500'
 
 SELECT MIN(`o0`.`OrderID`)
 FROM (
     SELECT `o`.`OrderID`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     ORDER BY `o`.`OrderID`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -1501,15 +1503,15 @@ GROUP BY `o0`.`CustomerID`
 
             AssertSql(
 """
-@__p_1='500'
-@__p_0='80'
+@p0='500'
+@p='80'
 
 SELECT MAX(`o0`.`OrderID`)
 FROM (
     SELECT `o`.`OrderID`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     ORDER BY `o`.`OrderID`
-    LIMIT @__p_1 OFFSET @__p_0
+    LIMIT @p0 OFFSET @p
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -1590,9 +1592,9 @@ GROUP BY `o0`.`CustomerID`
 
             AssertSql(
 """
-@__p_0='100'
-@__p_2='50'
-@__p_1='10'
+@p='100'
+@p1='50'
+@p0='10'
 
 SELECT `c0`.`CustomerID` AS `Key`, AVG(CAST(`o0`.`OrderID` AS double)) AS `Count`
 FROM (
@@ -1600,14 +1602,14 @@ FROM (
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10400
     ORDER BY `o`.`OrderDate`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o0`
 INNER JOIN (
     SELECT `c`.`CustomerID`
     FROM `Customers` AS `c`
     WHERE `c`.`CustomerID` NOT IN ('DRACD', 'FOLKO')
     ORDER BY `c`.`City`
-    LIMIT @__p_2 OFFSET @__p_1
+    LIMIT @p1 OFFSET @p0
 ) AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
 GROUP BY `c0`.`CustomerID`
 """);
@@ -1698,9 +1700,9 @@ GROUP BY `c`.`Country`
 
             AssertSql(
 """
-@__p_1='50'
-@__p_0='10'
-@__p_2='100'
+@p0='50'
+@p='10'
+@p1='100'
 
 SELECT `o0`.`CustomerID` AS `Key`, AVG(CAST(`o0`.`OrderID` AS double)) AS `Count`
 FROM (
@@ -1708,14 +1710,14 @@ FROM (
     FROM `Customers` AS `c`
     WHERE `c`.`CustomerID` NOT IN ('DRACD', 'FOLKO')
     ORDER BY `c`.`City`
-    LIMIT @__p_1 OFFSET @__p_0
+    LIMIT @p0 OFFSET @p
 ) AS `c0`
 INNER JOIN (
     SELECT `o`.`OrderID`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10400
     ORDER BY `o`.`OrderDate`
-    LIMIT @__p_2
+    LIMIT @p1
 ) AS `o0` ON `c0`.`CustomerID` = `o0`.`CustomerID`
 WHERE `o0`.`OrderID` > 10300
 GROUP BY `o0`.`CustomerID`
@@ -1918,8 +1920,8 @@ WHERE EXISTS (
 
             AssertSql(
 """
-@__p_0='20'
-@__p_1='4'
+@p='20'
+@p0='4'
 
 SELECT `o0`.`CustomerID`
 FROM (
@@ -1928,10 +1930,10 @@ FROM (
     GROUP BY `o`.`CustomerID`
     HAVING COUNT(*) > 10
     ORDER BY `o`.`CustomerID`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o0`
 ORDER BY `o0`.`CustomerID`
-LIMIT 18446744073709551610 OFFSET @__p_1
+LIMIT 18446744073709551610 OFFSET @p0
 """);
         }
 
@@ -1941,8 +1943,8 @@ LIMIT 18446744073709551610 OFFSET @__p_1
 
             AssertSql(
 """
-@__p_0='20'
-@__p_1='4'
+@p='20'
+@p0='4'
 
 SELECT `o0`.`Key`, `o0`.`Max`
 FROM (
@@ -1951,10 +1953,10 @@ FROM (
     GROUP BY `o`.`CustomerID`
     HAVING COUNT(*) > 10
     ORDER BY `o`.`CustomerID`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o0`
 ORDER BY `o0`.`Key`
-LIMIT 18446744073709551610 OFFSET @__p_1
+LIMIT 18446744073709551610 OFFSET @p0
 """);
         }
 
@@ -1964,8 +1966,8 @@ LIMIT 18446744073709551610 OFFSET @__p_1
 
             AssertSql(
 """
-@__p_0='20'
-@__p_1='4'
+@p='20'
+@p0='4'
 
 SELECT CHAR_LENGTH(`o0`.`CustomerID`)
 FROM (
@@ -1974,10 +1976,10 @@ FROM (
     GROUP BY `o`.`CustomerID`
     HAVING COUNT(*) > 10
     ORDER BY `o`.`CustomerID`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o0`
 ORDER BY `o0`.`CustomerID`
-LIMIT 18446744073709551610 OFFSET @__p_1
+LIMIT 18446744073709551610 OFFSET @p0
 """);
         }
 
@@ -1987,8 +1989,8 @@ LIMIT 18446744073709551610 OFFSET @__p_1
 
             AssertSql(
 """
-@__p_0='20'
-@__p_1='4'
+@p='20'
+@p0='4'
 
 SELECT 5
 FROM (
@@ -1997,10 +1999,10 @@ FROM (
     GROUP BY `o`.`CustomerID`
     HAVING COUNT(*) > 10
     ORDER BY `o`.`CustomerID`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o0`
 ORDER BY `o0`.`CustomerID`
-LIMIT 18446744073709551610 OFFSET @__p_1
+LIMIT 18446744073709551610 OFFSET @p0
 """);
         }
 
@@ -2419,14 +2421,14 @@ GROUP BY `o`.`OrderID`, `o`.`CustomerID`
 
             AssertSql(
 """
-@__p_0='80'
+@p='80'
 
 SELECT COALESCE(SUM(`o0`.`OrderID`), 0)
 FROM (
     SELECT `o`.`OrderID`, `o`.`CustomerID`
     FROM `Orders` AS `o`
     ORDER BY `o`.`CustomerID`, `o`.`OrderID`
-    LIMIT 18446744073709551610 OFFSET @__p_0
+    LIMIT 18446744073709551610 OFFSET @p
 ) AS `o0`
 GROUP BY `o0`.`CustomerID`
 """);
@@ -2561,7 +2563,7 @@ INNER JOIN `Orders` AS `o0` ON ((`o1`.`Key` = `o0`.`CustomerID`) OR (`o1`.`Key` 
 
             AssertSql(
 """
-@__p_0='10'
+@p='10'
 
 SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o0`.`Max`
 FROM `Customers` AS `c`
@@ -2571,7 +2573,7 @@ INNER JOIN (
     GROUP BY `o`.`CustomerID`
 ) AS `o0` ON `c`.`CustomerID` = `o0`.`Key`
 ORDER BY `o0`.`Max`, `c`.`CustomerID`
-LIMIT @__p_0 OFFSET @__p_0
+LIMIT @p OFFSET @p
 """);
         }
 
@@ -2877,7 +2879,7 @@ FROM (
 
             AssertSql(
 """
-SELECT `o`.`CustomerID` AS `Key`, AVG(DISTINCT (CAST(`o`.`OrderID` AS double))) AS `Average`, COUNT(DISTINCT (`o`.`EmployeeID`)) AS `Count`, COUNT(DISTINCT (`o`.`EmployeeID`)) AS `LongCount`, MAX(DISTINCT (`o`.`OrderDate`)) AS `Max`, MIN(DISTINCT (`o`.`OrderDate`)) AS `Min`, COALESCE(SUM(DISTINCT (`o`.`OrderID`)), 0) AS `Sum`
+SELECT `o`.`CustomerID` AS `Key`, AVG(DISTINCT (CAST(`o`.`OrderID` AS double))) AS `Average`, COUNT(DISTINCT (`o`.`EmployeeID`)) AS `Count`, COUNT(DISTINCT (`o`.`EmployeeID`)) AS `LongCount`, MAX(`o`.`OrderDate`) AS `Max`, MIN(`o`.`OrderDate`) AS `Min`, COALESCE(SUM(DISTINCT (`o`.`OrderID`)), 0) AS `Sum`
 FROM `Orders` AS `o`
 GROUP BY `o`.`CustomerID`
 """);

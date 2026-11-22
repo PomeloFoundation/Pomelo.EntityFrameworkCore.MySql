@@ -138,8 +138,10 @@ WHERE (`a`.`CountryId` = 1) AND `a`.`Id` IN (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -153,8 +155,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -168,8 +172,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Animal' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Animal'
+SET `a`.`Name` = @p
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 """);
     }
@@ -180,8 +186,10 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Name` = 'Great spotted kiwi')
 
         AssertExecuteUpdateSql(
 """
+@p='NewBird' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'NewBird'
+SET `a`.`Name` = @p
 WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
 """);
     }
@@ -192,8 +200,10 @@ WHERE (`a`.`CountryId` = 1) AND (`a`.`Discriminator` = 'Kiwi')
 
         AssertExecuteUpdateSql(
 """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'SomeOtherKiwi'
+SET `a`.`Name` = @p
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }
@@ -204,8 +214,10 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0
+SET `a`.`FoundOn` = @p
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }
@@ -216,9 +228,12 @@ WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 
         AssertExecuteUpdateSql(
 """
+@p='Kiwi' (Size = 4000)
+@p0='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0,
-    `a`.`Name` = 'Kiwi'
+SET `a`.`Name` = @p,
+    `a`.`FoundOn` = @p0
 WHERE (`a`.`Discriminator` = 'Kiwi') AND (`a`.`CountryId` = 1)
 """);
     }

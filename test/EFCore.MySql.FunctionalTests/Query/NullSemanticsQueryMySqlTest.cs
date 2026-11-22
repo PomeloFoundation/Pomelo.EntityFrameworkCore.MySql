@@ -52,11 +52,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Select(e => e.Id));
 
             AssertSql(
-                @"@__prm_0='False'
+"""
+@prm='False'
 
 SELECT `e`.`Id`
 FROM `Entities1` AS `e`
-WHERE @__prm_0 = (`e`.`NullableBoolC` IS NOT NULL)");
+WHERE @prm = (`e`.`NullableBoolC` IS NOT NULL)
+""");
         }
 
         protected override NullSemanticsContext CreateContext(bool useRelationalNulls = false)

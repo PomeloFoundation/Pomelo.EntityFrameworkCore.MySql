@@ -27,8 +27,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
         public virtual QueryCompilationContext Create(bool async)
             => new MySqlQueryCompilationContext(_dependencies, _relationalDependencies, async);
 
-        public virtual QueryCompilationContext CreatePrecompiled(bool async, IReadOnlySet<string> nonNullableReferenceTypeParameters)
+        public virtual QueryCompilationContext CreatePrecompiled(bool async)
             => new MySqlQueryCompilationContext(
-                _dependencies, _relationalDependencies, async, precompiling: true, nonNullableReferenceTypeParameters);
+                _dependencies, _relationalDependencies, async, precompiling: true);
     }
 }

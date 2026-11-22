@@ -10,6 +10,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class AdHocQuerySplittingQueryMySqlTest : AdHocQuerySplittingQueryTestBase
 {
+    public AdHocQuerySplittingQueryMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override DbContextOptionsBuilder SetQuerySplittingBehavior(
         DbContextOptionsBuilder optionsBuilder,
         QuerySplittingBehavior splittingBehavior)

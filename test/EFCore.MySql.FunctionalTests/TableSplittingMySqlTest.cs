@@ -11,8 +11,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests
     [SupportedServerVersionCondition(nameof(ServerVersionSupport.GeneratedColumns))]
     public class TableSplittingMySqlTest : TableSplittingTestBase
     {
-        public TableSplittingMySqlTest(ITestOutputHelper testOutputHelper)
-            : base(testOutputHelper)
+        public TableSplittingMySqlTest(NonSharedFixture fixture, ITestOutputHelper testOutputHelper)
+            : base(fixture, testOutputHelper)
         {
         }
 

@@ -301,6 +301,7 @@ public class MySqlRelationalConnectionTest
         var singletonOptions = new MySqlOptions();
         singletonOptions.Initialize(options);
 
+        var exceptionDetector = new ExceptionDetector();
         return new MySqlRelationalConnection(
             new RelationalConnectionDependencies(
                 options,
@@ -329,7 +330,9 @@ public class MySqlRelationalConnectionTest
                             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
                             singletonOptions),
-                        new ExceptionDetector()))),
+                        exceptionDetector,
+                        new LoggingOptions())),
+                exceptionDetector),
             new MySqlConnectionStringOptionsValidator(),
             singletonOptions);
     }
