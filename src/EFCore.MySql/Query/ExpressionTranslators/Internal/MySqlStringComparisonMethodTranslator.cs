@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -525,7 +526,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             StartsEndsWithContains methodType)
         {
             if (pattern is SqlParameterExpression patternParameter &&
-                patternParameter.Name.StartsWith(QueryCompilationContext.QueryParameterPrefix, StringComparison.Ordinal))
+                patternParameter.TranslationMode == ParameterTranslationMode.Parameter)
             {
                 // The pattern is a parameter, register a runtime parameter that will contain the rewritten LIKE pattern, where
                 // all special characters have been escaped.
@@ -718,7 +719,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             QueryContext queryContext,
             string baseParameterName,
             StartsEndsWithContains methodType)
-            => queryContext.ParameterValues[baseParameterName] switch
+            => queryContext.Parameters[baseParameterName] switch
             {
                 null => null,
 

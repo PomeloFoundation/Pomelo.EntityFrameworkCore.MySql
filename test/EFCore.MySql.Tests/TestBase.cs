@@ -19,7 +19,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
         public Task DisposeAsync()
             => Task.CompletedTask;
 
-        public virtual void Dispose() => TestStore.Dispose();
+        public virtual void Dispose() => TestStore.DisposeAsync().GetAwaiter().GetResult();
 
         public virtual string StoreName => GetType().Name;
         public virtual MySqlTestStore TestStore { get; private set; }

@@ -80,10 +80,11 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                        && IsJsonEachKeyColumn(subquery, projectedColumn)));
     }
 
+    [Obsolete]
     protected override bool IsValidSelectExpressionForExecuteDelete(
         SelectExpression selectExpression,
         StructuralTypeShaperExpression shaper,
-        [NotNullWhen(true)] out TableExpression tableExpression)
+        out TableExpression tableExpression)
     {
         if (selectExpression.Offset == null
             && selectExpression.GroupBy.Count == 0
@@ -238,6 +239,54 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 }
 
                 return source.UpdateQueryExpression(new SelectExpression(translation, _sqlAliasManager));
+            }
+        }
+
+        if (!returnDefault
+            && source.QueryExpression is SelectExpression
+            {
+                Tables:
+                [
+                    ValuesExpression
+                    {
+                        ColumnNames: [var ordinalColumnName, _]
+                    } inlinedCollectionExpression
+                ],
+                GroupBy: [],
+                Having: null,
+                IsDistinct: false,
+                Orderings: [{ Expression: ColumnExpression { Name: var orderingsColumnName } ordColumn, IsAscending: true }],
+                Limit: null,
+                Offset: null
+            } inlineSelectExpression
+            && orderingsColumnName == ordinalColumnName
+            && ordColumn.TableAlias == inlinedCollectionExpression.Alias
+            && TranslateExpression(index) is { } inlinedTranslatedIndex)
+        {
+            // Index on an inlined primitive collection (ValuesExpression, rendered via
+            // `SELECT ... UNION ALL SELECT ...`).
+            //
+            // The EF Core 10 base implementation translates this into a `LIMIT 1 OFFSET <index>`
+            // subquery, which MySQL does not support, because MySQL only allows literal integers
+            // or parameter placeholders in LIMIT/OFFSET clauses (no column expressions).
+            // Translate to an equivalent correlated predicate on the ordinal column instead.
+
+            var shaperExpression = source.ShaperExpression;
+            if (shaperExpression is UnaryExpression { NodeType: ExpressionType.Convert } inlineUnaryExpression
+                && inlineUnaryExpression.Operand.Type.IsNullableType()
+                && inlineUnaryExpression.Operand.Type.UnwrapNullableType() == inlineUnaryExpression.Type)
+            {
+                shaperExpression = inlineUnaryExpression.Operand;
+            }
+
+            if (shaperExpression is ProjectionBindingExpression inlineProjectionBindingExpression
+                && inlineSelectExpression.GetProjection(inlineProjectionBindingExpression) is ColumnExpression inlineProjectionColumn)
+            {
+                // Use the mutable SelectExpression API (Update() is not supported in mutable state).
+                inlineSelectExpression.ApplyPredicate(_sqlExpressionFactory.Equal(ordColumn, inlinedTranslatedIndex));
+                inlineSelectExpression.ClearOrdering();
+
+                return source;
             }
         }
 

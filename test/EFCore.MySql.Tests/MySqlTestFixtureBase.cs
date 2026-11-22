@@ -64,7 +64,7 @@ namespace Pomelo.EntityFrameworkCore.MySql
 
         protected override void Dispose(bool disposing)
         {
-            TestStore.Dispose();
+            TestStore.DisposeAsync().GetAwaiter().GetResult();
             base.Dispose(disposing);
         }
 

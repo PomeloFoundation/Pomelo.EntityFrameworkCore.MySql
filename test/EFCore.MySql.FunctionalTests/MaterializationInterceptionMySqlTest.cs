@@ -6,6 +6,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests;
 
 public class MaterializationInterceptionMySqlTest : MaterializationInterceptionTestBase<MaterializationInterceptionMySqlTest.MySqlLibraryContext>
 {
+    public MaterializationInterceptionMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     public class MySqlLibraryContext : LibraryContext
     {
         public MySqlLibraryContext(DbContextOptions options)

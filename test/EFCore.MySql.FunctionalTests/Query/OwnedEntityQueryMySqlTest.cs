@@ -12,6 +12,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
     public class OwnedEntityQueryMySqlTest : OwnedEntityQueryRelationalTestBase
     {
+    public OwnedEntityQueryMySqlTest(NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
         protected override ITestStoreFactory TestStoreFactory => MySqlTestStoreFactory.Instance;
 
         public override async Task Multiple_single_result_in_projection_containing_owned_types(bool async)

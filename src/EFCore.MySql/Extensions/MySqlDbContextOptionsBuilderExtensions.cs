@@ -6,6 +6,7 @@ using System.Data.Common;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -62,7 +63,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -108,7 +109,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -158,7 +159,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 
@@ -205,7 +206,7 @@ namespace Microsoft.EntityFrameworkCore
             ConfigureWarnings(optionsBuilder);
 
             var mySqlDbContextOptionsBuilder = new MySqlDbContextOptionsBuilder(optionsBuilder)
-                .TranslateParameterizedCollectionsToConstants();
+                .UseParameterizedCollectionMode(ParameterTranslationMode.Constant);
 
             mySqlOptionsAction?.Invoke(mySqlDbContextOptionsBuilder);
 

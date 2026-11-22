@@ -329,7 +329,9 @@ public class MySqlRelationalConnectionTest
                             TestServiceFactory.Instance.Create<TypeMappingSourceDependencies>(),
                             TestServiceFactory.Instance.Create<RelationalTypeMappingSourceDependencies>(),
                             singletonOptions),
-                        new ExceptionDetector()))),
+                        new ExceptionDetector(),
+                        new LoggingOptions())),
+                new ExceptionDetector()),
             new MySqlConnectionStringOptionsValidator(),
             singletonOptions);
     }

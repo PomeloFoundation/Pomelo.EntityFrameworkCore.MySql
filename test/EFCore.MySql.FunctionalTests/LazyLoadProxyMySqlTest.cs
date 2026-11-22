@@ -24,11 +24,11 @@ FROM `Parent` AS `p`
 ORDER BY `p`.`Id`
 LIMIT 1
 
-@__p_0='707' (Nullable = true)
+@p='707' (Nullable = true)
 
 SELECT `s`.`Id`, `s`.`ParentId`, `s`.`Culture_Rating`, `s`.`Culture_Species`, `s`.`Culture_Subspecies`, `s`.`Culture_Validation`, `s`.`Culture_License_Charge`, `s`.`Culture_License_Title`, `s`.`Culture_License_Tag_Text`, `s`.`Culture_License_Tog_Text`, `s`.`Culture_Manufacturer_Name`, `s`.`Culture_Manufacturer_Rating`, `s`.`Culture_Manufacturer_Tag_Text`, `s`.`Culture_Manufacturer_Tog_Text`, `s`.`Milk_Rating`, `s`.`Milk_Species`, `s`.`Milk_Subspecies`, `s`.`Milk_Validation`, `s`.`Milk_License_Charge`, `s`.`Milk_License_Title`, `s`.`Milk_License_Tag_Text`, `s`.`Milk_License_Tog_Text`, `s`.`Milk_Manufacturer_Name`, `s`.`Milk_Manufacturer_Rating`, `s`.`Milk_Manufacturer_Tag_Text`, `s`.`Milk_Manufacturer_Tog_Text`
 FROM `Single` AS `s`
-WHERE `s`.`ParentId` = @__p_0
+WHERE `s`.`ParentId` = @p
 LIMIT 1
 """,
                 Sql,

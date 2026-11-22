@@ -129,11 +129,11 @@ WHERE `m`.`TimeSpanAsTime` = TIME '00:01:02'",
 
                 Assert.Empty(results);
                 Assert.Equal(
-                    @"@__timeSpan_0='02:01:00' (Nullable = true)
+                    @"@timeSpan='02:01:00' (Nullable = true)
 
 SELECT `m`.`Int`
 FROM `MappedNullableDataTypes` AS `m`
-WHERE `m`.`TimeSpanAsTime` = @__timeSpan_0",
+WHERE `m`.`TimeSpanAsTime` = @timeSpan",
                     Sql,
                     ignoreLineEndingDifferences: true);
             }
