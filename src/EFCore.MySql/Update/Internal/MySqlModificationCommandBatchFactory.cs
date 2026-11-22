@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Update;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 

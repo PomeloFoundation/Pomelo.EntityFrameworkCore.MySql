@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Operators;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -10,6 +12,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query;
 
 public class OperatorsQueryMySqlTest : OperatorsQueryTestBase
 {
+    public OperatorsQueryMySqlTest([NotNull] NonSharedFixture fixture)
+        : base(fixture)
+    {
+    }
+
     protected override ITestStoreFactory TestStoreFactory
         => MySqlTestStoreFactory.Instance;
 
@@ -42,7 +49,7 @@ FROM `OperatorEntityLong` AS `o`
 CROSS JOIN `OperatorEntityLong` AS `o0`
 CROSS JOIN `OperatorEntityLong` AS `o1`
 CROSS JOIN `OperatorEntityLong` AS `o2`
-WHERE CAST(((`o0`.`Value` % 2) / `o`.`Value`) & ((CAST(`o2`.`Value` | `o1`.`Value` AS signed) - `o`.`Value`) - (`o1`.`Value` * `o1`.`Value`)) AS signed) >= (((`o0`.`Value` / CAST(~`o2`.`Value` AS signed)) % 2) % (CAST(~`o`.`Value` AS signed) + 1))
+WHERE CAST((`o0`.`Value` % 2) DIV (`o`.`Value`) & ((CAST(`o2`.`Value` | `o1`.`Value` AS signed) - `o`.`Value`) - (`o1`.`Value` * `o1`.`Value`)) AS signed) >= (((`o0`.`Value`) DIV (CAST(~`o2`.`Value` AS signed)) % 2) % (CAST(~`o`.`Value` AS signed) + 1))
 ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`, `o2`.`Id`
 """);
     }
@@ -57,7 +64,7 @@ SELECT `o`.`Value` AS `Value0`, `o0`.`Value` AS `Value1`, `o1`.`Value` AS `Value
 FROM `OperatorEntityInt` AS `o`
 CROSS JOIN `OperatorEntityInt` AS `o0`
 CROSS JOIN `OperatorEntityBool` AS `o1`
-WHERE ((CAST(CAST(`o0`.`Value` & (`o`.`Value` + `o`.`Value`) AS signed) & `o`.`Value` AS signed) / 1) > CAST(`o0`.`Value` & 10 AS signed)) AND `o1`.`Value`
+WHERE ((CAST(CAST(`o0`.`Value` & (`o`.`Value` + `o`.`Value`) AS signed) & `o`.`Value` AS signed)) DIV (1) > CAST(`o0`.`Value` & 10 AS signed)) AND `o1`.`Value`
 ORDER BY `o`.`Id`, `o0`.`Id`, `o1`.`Id`
 """);
     }

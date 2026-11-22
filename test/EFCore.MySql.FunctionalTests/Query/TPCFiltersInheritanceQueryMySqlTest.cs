@@ -207,11 +207,11 @@ LIMIT 2
 """,
                 //
                 """
-@__p_0='2'
+@p='2'
 
 SELECT `e`.`Id`, `e`.`CountryId`, `e`.`Name`, `e`.`Species`, `e`.`EagleId`, `e`.`IsFlightless`, `e`.`Group`
 FROM `Eagle` AS `e`
-WHERE `e`.`Id` = @__p_0
+WHERE `e`.`Id` = @p
 LIMIT 1
 """);
     }

@@ -122,7 +122,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             var validParameters = (limitGroupsWithParameter
                     .Where(c => parameterPositions.Contains(c.Index) &&
                                 command.Parameters.Contains(c.Value))
-                    .Select(c => new {Index = c.Index, ParameterName = c.Value}))
+                    .Select(c => new { Index = c.Index, ParameterName = c.Value }))
                 .Concat(stringParameterNames.SelectMany(s => parameters.Where(p => p.ParameterName == s)))
                 .Distinct()
                 .OrderByDescending(c => c.Index)

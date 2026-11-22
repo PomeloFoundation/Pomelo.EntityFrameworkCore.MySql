@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -48,7 +48,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 
         AssertSql(
 """
-@__p_0='1'
+@p='1'
 
 SELECT `l1`.`Name`
 FROM `Level1` AS `l`
@@ -58,7 +58,7 @@ INNER JOIN (
     WHERE (`l0`.`OneToOne_Required_PK_Date` IS NOT NULL AND (`l0`.`Level1_Required_Id` IS NOT NULL)) AND `l0`.`OneToMany_Required_Inverse2Id` IS NOT NULL
 ) AS `l1` ON `l`.`Id` = `l1`.`OneToMany_Optional_Inverse2Id`
 ORDER BY `l1`.`Name`
-LIMIT @__p_0
+LIMIT @p
 """);
         }
 
@@ -104,14 +104,14 @@ LIMIT @__p_0
 
             AssertSql(
 """
-@__p_0='2'
+@p='2'
 
 SELECT `l6`.`Id`, `s`.`Id`, `s`.`Id0`, `s`.`Id1`, `s`.`Result`, `s`.`Id2`, `s`.`Id3`, `s`.`Id4`
 FROM (
     SELECT `l`.`Id`
     FROM `Level1` AS `l`
     ORDER BY `l`.`Id`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `l6`
 LEFT JOIN (
     SELECT CASE

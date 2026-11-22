@@ -2,7 +2,7 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -23,8 +23,7 @@ public class MySqlParameterInliningExpressionVisitor : ExpressionVisitor
     private readonly ISqlExpressionFactory _sqlExpressionFactory;
     private readonly IMySqlOptions _options;
 
-    private IReadOnlyDictionary<string, object> _parametersValues;
-    private bool _canCache;
+    private ParametersCacheDecorator _parametersDecorator;
 
     private bool _shouldInlineParameters;
 
@@ -38,19 +37,14 @@ public class MySqlParameterInliningExpressionVisitor : ExpressionVisitor
         _options = options;
     }
 
-    public virtual Expression Process(Expression expression, IReadOnlyDictionary<string, object> parametersValues, out bool canCache)
+    public virtual Expression Process(Expression expression, ParametersCacheDecorator parametersDecorator)
     {
         Check.NotNull(expression, nameof(expression));
 
-        _parametersValues = parametersValues;
-        _canCache = true;
+        _parametersDecorator = parametersDecorator;
         _shouldInlineParameters = false;
 
-        var result = Visit(expression);
-
-        canCache = _canCache;
-
-        return result;
+        return Visit(expression);
     }
 
     protected override Expression VisitExtension(Expression extensionExpression)
@@ -66,24 +60,83 @@ public class MySqlParameterInliningExpressionVisitor : ExpressionVisitor
         };
 
     protected virtual Expression VisitSelect(SelectExpression selectExpression)
-        => NewInlineParametersScope(
+    {
+        // MySQL/MariaDB do not support arbitrary expressions (e.g. LEAST/GREATEST) in LIMIT/OFFSET.
+        // Evaluate any non-constant, non-parameter expression in Limit/Offset client-side and replace with a constant.
+        var newLimit = TrySimplifyLimitOffset(selectExpression.Limit);
+        var newOffset = TrySimplifyLimitOffset(selectExpression.Offset);
+
+        if (newLimit != selectExpression.Limit || newOffset != selectExpression.Offset)
+        {
+            selectExpression = selectExpression.Update(
+                selectExpression.Tables,
+                selectExpression.Predicate,
+                selectExpression.GroupBy,
+                selectExpression.Having,
+                selectExpression.Projection,
+                selectExpression.Orderings,
+                newOffset,
+                newLimit);
+        }
+
+        return NewInlineParametersScope(
             inlineParameters: false,
             () => base.VisitExtension(selectExpression));
-        // => NewInlineParametersScope(
-        //     inlineParameters: false,
-        //     () => selectExpression.Offset is not null
-        //         ? selectExpression.Update(
-        //             selectExpression.Projection,
-        //             selectExpression.Tables,
-        //             selectExpression.Predicate,
-        //             selectExpression.GroupBy,
-        //             selectExpression.Having,
-        //             selectExpression.Orderings,
-        //             selectExpression.Limit,
-        //             NewInlineParametersScope(
-        //                 inlineParameters: true,
-        //                 () => (SqlExpression)Visit(selectExpression.Offset)))
-        //         : base.VisitExtension(selectExpression));
+    }
+
+    private SqlExpression TrySimplifyLimitOffset(SqlExpression sqlExpression)
+    {
+        if (sqlExpression is null
+            || sqlExpression is SqlConstantExpression
+            || sqlExpression is SqlParameterExpression)
+        {
+            return sqlExpression;
+        }
+
+        // Complex expression (e.g. LEAST(@p, 1)) — evaluate client-side.
+        try
+        {
+            var value = EvaluateExpressionClientSide(sqlExpression);
+            if (value is not null)
+            {
+                return _sqlExpressionFactory.Constant(value, sqlExpression.TypeMapping);
+            }
+        }
+        catch
+        {
+            // If we can't evaluate, leave as-is (will fail at runtime, but at least we tried).
+        }
+
+        return sqlExpression;
+    }
+
+    private object EvaluateExpressionClientSide(SqlExpression sqlExpression)
+    {
+        return sqlExpression switch
+        {
+            SqlConstantExpression c => c.Value,
+            SqlParameterExpression p => _parametersDecorator.GetAndDisableCaching()[p.Name],
+            SqlFunctionExpression f => EvaluateFunctionClientSide(f),
+            _ => null,
+        };
+    }
+
+    private object EvaluateFunctionClientSide(SqlFunctionExpression function)
+    {
+        if (function.Arguments is null)
+        {
+            return null;
+        }
+
+        var args = function.Arguments.Select(EvaluateExpressionClientSide).Where(a => a is not null).ToArray();
+
+        return function.Name switch
+        {
+            "LEAST" => args.Min(),
+            "GREATEST" => args.Max(),
+            _ => null,
+        };
+    }
 
     // For test simplicity, we currently inline parameters even for non MySQL database engines (even though it should not be necessary
     // for e.g. MariaDB).
@@ -103,12 +156,12 @@ public class MySqlParameterInliningExpressionVisitor : ExpressionVisitor
             return sqlParameterExpression;
         }
 
-        _canCache = false;
+        var parametersValues = _parametersDecorator.GetAndDisableCaching();
 
         return new MySqlInlinedParameterExpression(
             sqlParameterExpression,
             (SqlConstantExpression)_sqlExpressionFactory.Constant(
-                _parametersValues[sqlParameterExpression.Name],
+                parametersValues[sqlParameterExpression.Name],
                 sqlParameterExpression.TypeMapping));
     }
 

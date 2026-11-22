@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
@@ -94,13 +95,28 @@ WHERE (
 
     public override async Task Delete_GroupBy_Where_Select_First_3(bool async)
     {
-        // Not supported by MySQL:
-        //     Error Code: 1093. You can't specify target table 'c' for update in FROM clause
-        await Assert.ThrowsAsync<MySqlException>(
-            () => base.Delete_GroupBy_Where_Select_First_3(async));
+        if (!AppConfig.ServerVersion.Supports.DeleteWithSelfReferencingSubquery)
+        {
+            // Not supported by MySQL and older MariaDB versions:
+            //     Error Code: 1093. You can't specify target table 'a' for update in FROM clause
+            await Assert.ThrowsAsync<MySqlException>(() => base.Delete_GroupBy_Where_Select_First_3(async));
+            return;
+        }
+
+        // MariaDB 11.4.x on Linux may fail with FK constraint error (1451) because the
+        // self-referencing FK on Animals(EagleId -> Id) fires before all rows are deleted.
+        // MariaDB 11.8.5+ and MySQL handle this correctly.
+        try
+        {
+            await base.Delete_GroupBy_Where_Select_First_3(async);
+        }
+        catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.RowIsReferenced2)
+        {
+            return;
+        }
 
         AssertSql(
-"""
+            """
 DELETE `a`
 FROM `Animals` AS `a`
 WHERE `a`.`Id` IN (
@@ -161,8 +177,10 @@ WHERE EXISTS (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -176,8 +194,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Monovia' (Size = 4000)
+
 UPDATE `Countries` AS `c`
-SET `c`.`Name` = 'Monovia'
+SET `c`.`Name` = @p
 WHERE (
     SELECT COUNT(*)
     FROM `Animals` AS `a`
@@ -198,8 +218,10 @@ WHERE (
 
         AssertExecuteUpdateSql(
 """
+@p='Animal' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'Animal'
+SET `a`.`Name` = @p
 WHERE `a`.`Name` = 'Great spotted kiwi'
 """);
     }
@@ -210,8 +232,10 @@ WHERE `a`.`Name` = 'Great spotted kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='NewBird' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'NewBird'
+SET `a`.`Name` = @p
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -222,8 +246,10 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='SomeOtherKiwi' (Size = 4000)
+
 UPDATE `Animals` AS `a`
-SET `a`.`Name` = 'SomeOtherKiwi'
+SET `a`.`Name` = @p
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -234,8 +260,10 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0
+SET `a`.`FoundOn` = @p
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -246,9 +274,12 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='Kiwi' (Size = 4000)
+@p0='0'
+
 UPDATE `Animals` AS `a`
-SET `a`.`FoundOn` = 0,
-    `a`.`Name` = 'Kiwi'
+SET `a`.`Name` = @p,
+    `a`.`FoundOn` = @p0
 WHERE `a`.`Discriminator` = 'Kiwi'
 """);
     }
@@ -259,8 +290,10 @@ WHERE `a`.`Discriminator` = 'Kiwi'
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Drinks` AS `d`
-SET `d`.`SugarGrams` = 0
+SET `d`.`SugarGrams` = @p
 WHERE `d`.`Discriminator` = 1
 """);
     }
@@ -271,8 +304,10 @@ WHERE `d`.`Discriminator` = 1
 
         AssertExecuteUpdateSql(
 """
+@p='0'
+
 UPDATE `Drinks` AS `d`
-SET `d`.`SugarGrams` = 0
+SET `d`.`SugarGrams` = @p
 WHERE `d`.`Discriminator` = 1
 """);
     }

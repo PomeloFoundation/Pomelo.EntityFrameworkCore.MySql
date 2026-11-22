@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 
 //ReSharper disable once CheckNamespace
 namespace Microsoft.EntityFrameworkCore

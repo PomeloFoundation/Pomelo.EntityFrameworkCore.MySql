@@ -18,9 +18,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -35,9 +37,11 @@ WHERE TIMESTAMPDIFF(YEAR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -52,9 +56,11 @@ WHERE TIMESTAMPDIFF(QUARTER, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -69,9 +75,11 @@ WHERE TIMESTAMPDIFF(WEEK, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -86,9 +94,11 @@ WHERE TIMESTAMPDIFF(MONTH, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -103,9 +113,11 @@ WHERE TIMESTAMPDIFF(DAY, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -120,9 +132,11 @@ WHERE TIMESTAMPDIFF(HOUR, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -137,9 +151,11 @@ WHERE TIMESTAMPDIFF(MINUTE, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
+WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0
+""");
             }
         }
 
@@ -154,9 +170,11 @@ WHERE TIMESTAMPDIFF(SECOND, `o`.`OrderDate`, CURRENT_TIMESTAMP(6)) = 0");
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second))) DIV (1000) = 0");
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second))) DIV (1000) = 0
+""");
             }
         }
 
@@ -171,9 +189,11 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTA
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) = 0");
+WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) = 0
+""");
             }
         }
 
@@ -188,9 +208,11 @@ WHERE TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAM
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) * 10) = 0");
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) * 10) = 0
+""");
             }
         }
 
@@ -205,9 +227,11 @@ WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTA
                 Assert.Equal(0, count);
 
                 AssertSql(
-                    @"SELECT COUNT(*)
+                    """
+SELECT COUNT(*)
 FROM `Orders` AS `o`
-WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) * 1000) = 0");
+WHERE (TIMESTAMPDIFF(MICROSECOND, CURRENT_TIMESTAMP(6), DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL CAST(1.0 AS signed) second)) * 1000) = 0
+""");
             }
         }
 
@@ -340,12 +364,14 @@ WHERE UNHEX(HEX(`o`.`CustomerID`)) = 'VINET'");
             Assert.Equal(degrees, office.OfficeRoofAngleDegrees);
 
             AssertSql(
-                @"@__radians_1='1.5707963267948966'
+"""
+@radians='1.5707963267948966'
 
-SELECT `c`.`CustomerID`, DEGREES(@__radians_1) AS `OfficeRoofAngleDegrees`
+SELECT `c`.`CustomerID`, DEGREES(@radians) AS `OfficeRoofAngleDegrees`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'VINET'
-LIMIT 1");
+LIMIT 1
+""");
         }
 
         [ConditionalFact]
@@ -363,12 +389,14 @@ LIMIT 1");
             Assert.Equal(radians, office.OfficeRoofAngleRadians);
 
             AssertSql(
-                @"@__degrees_1='90'
+"""
+@degrees='90'
 
-SELECT `c`.`CustomerID`, RADIANS(@__degrees_1) AS `OfficeRoofAngleRadians`
+SELECT `c`.`CustomerID`, RADIANS(@degrees) AS `OfficeRoofAngleRadians`
 FROM `Customers` AS `c`
 WHERE `c`.`CustomerID` = 'VINET'
-LIMIT 1");
+LIMIT 1
+""");
         }
 
         [ConditionalFact]

@@ -334,7 +334,7 @@ AND
             return sequences;
         }
 
-            private const string GetColumnsQuery = @"SELECT
+        private const string GetColumnsQuery = @"SELECT
 	`COLUMN_NAME`,
     `ORDINAL_POSITION`,
     `COLUMN_DEFAULT`,
@@ -848,7 +848,7 @@ ORDER BY
                 //
 
                 var fullTextIndexes = table.Indexes
-                    .Where(i => ((bool?) i[MySqlAnnotationNames.FullTextIndex]).GetValueOrDefault())
+                    .Where(i => ((bool?)i[MySqlAnnotationNames.FullTextIndex]).GetValueOrDefault())
                     .ToList();
 
                 if (fullTextIndexes.Any())
@@ -932,7 +932,7 @@ ORDER BY
                             }
                             if (referencedTable != null)
                             {
-                                var fkInfo = new DatabaseForeignKey {Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable};
+                                var fkInfo = new DatabaseForeignKey { Name = reader.GetString(0), OnDelete = ConvertToReferentialAction(reader.GetString(4)), Table = table, PrincipalTable = referencedTable };
                                 foreach (var pair in reader.GetString(3).Split(','))
                                 {
                                     fkInfo.Columns.Add(table.Columns.Single(y =>

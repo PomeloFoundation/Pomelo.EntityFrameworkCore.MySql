@@ -8,7 +8,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
+
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -41,13 +41,15 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
                     .Take(1));
 
             AssertSql(
-                @"@__p_0='1'
+"""
+@p='1'
 
 SELECT `l0`.`Name`
 FROM `LevelOne` AS `l`
 INNER JOIN `LevelTwo` AS `l0` ON `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
 ORDER BY `l0`.`Name`
-LIMIT @__p_0");
+LIMIT @p
+""");
         }
 
         public override async Task GroupJoin_client_method_in_OrderBy(bool async)
@@ -74,24 +76,36 @@ LIMIT @__p_0");
         public override async Task Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(bool async)
         {
             // DefaultIfEmpty on child collection. Issue #19095.
-            await Assert.ThrowsAsync<EqualException>(
-                async () => await base.Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(async));
+            // EF Core 10 now translates this correctly.
+            await base.Nested_SelectMany_correlated_with_join_table_correctly_translated_to_apply(async);
 
         AssertSql(
 """
 SELECT `s0`.`l1Name`, `s0`.`l2Name`, `s0`.`l3Name`
 FROM `LevelOne` AS `l`
-LEFT JOIN LATERAL (
+JOIN LATERAL (
     SELECT `s`.`l1Name`, `s`.`l2Name`, `s`.`l3Name`
-    FROM `LevelTwo` AS `l0`
-    LEFT JOIN `LevelThree` AS `l1` ON `l0`.`Id` = `l1`.`Id`
+    FROM (
+        SELECT 1
+    ) AS `e`
+    LEFT JOIN (
+        SELECT `l0`.`Id`
+        FROM `LevelTwo` AS `l0`
+        WHERE `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
+    ) AS `l1` ON TRUE
+    LEFT JOIN `LevelThree` AS `l2` ON `l1`.`Id` = `l2`.`Id`
     JOIN LATERAL (
-        SELECT `l`.`Name` AS `l1Name`, `l1`.`Name` AS `l2Name`, `l3`.`Name` AS `l3Name`
-        FROM `LevelFour` AS `l2`
-        LEFT JOIN `LevelThree` AS `l3` ON `l2`.`OneToOne_Optional_PK_Inverse4Id` = `l3`.`Id`
-        WHERE `l1`.`Id` IS NOT NULL AND (`l1`.`Id` = `l2`.`OneToMany_Optional_Inverse4Id`)
+        SELECT `l`.`Name` AS `l1Name`, `l2`.`Name` AS `l2Name`, `l5`.`Name` AS `l3Name`
+        FROM (
+            SELECT 1
+        ) AS `e0`
+        LEFT JOIN (
+            SELECT `l3`.`OneToOne_Optional_PK_Inverse4Id`
+            FROM `LevelFour` AS `l3`
+            WHERE `l2`.`Id` IS NOT NULL AND (`l2`.`Id` = `l3`.`OneToMany_Optional_Inverse4Id`)
+        ) AS `l4` ON TRUE
+        LEFT JOIN `LevelThree` AS `l5` ON `l4`.`OneToOne_Optional_PK_Inverse4Id` = `l5`.`Id`
     ) AS `s` ON TRUE
-    WHERE `l`.`Id` = `l0`.`OneToMany_Optional_Inverse2Id`
 ) AS `s0` ON TRUE
 """);
         }

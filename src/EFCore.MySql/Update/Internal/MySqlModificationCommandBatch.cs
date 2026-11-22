@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Utilities;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Update.Internal;
 

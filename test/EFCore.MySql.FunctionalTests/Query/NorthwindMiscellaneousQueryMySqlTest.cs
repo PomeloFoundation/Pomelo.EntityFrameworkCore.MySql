@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Pomelo.EntityFrameworkCore.MySql.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Tests;
 using Pomelo.EntityFrameworkCore.MySql.Tests.TestUtilities.Attributes;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
 {
@@ -30,162 +30,6 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.Query
             //Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public override async Task Select_bitwise_or(bool async)
-        {
-            await base.Select_bitwise_or(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`CustomerID` IN ('ALFKI', 'ANATR') AS `Value`
-FROM `Customers` AS `c`
-ORDER BY `c`.`CustomerID`
-""");
-        }
-
-        public override async Task Select_bitwise_or_multiple(bool async)
-        {
-            await base.Select_bitwise_or_multiple(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`CustomerID` IN ('ALFKI', 'ANATR', 'ANTON') AS `Value`
-FROM `Customers` AS `c`
-ORDER BY `c`.`CustomerID`
-""");
-        }
-
-        public override async Task Select_bitwise_and(bool async)
-        {
-            await base.Select_bitwise_and(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, FALSE AS `Value`
-FROM `Customers` AS `c`
-ORDER BY `c`.`CustomerID`
-""");
-        }
-
-        public override async Task Select_bitwise_and_or(bool async)
-        {
-            await base.Select_bitwise_and_or(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`CustomerID` = 'ANTON' AS `Value`
-FROM `Customers` AS `c`
-ORDER BY `c`.`CustomerID`
-""");
-        }
-
-        public override async Task Where_bitwise_or_with_logical_or(bool async)
-        {
-            await base.Where_bitwise_or_with_logical_or(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` IN ('ALFKI', 'ANATR', 'ANTON')
-""");
-        }
-
-        public override async Task Where_bitwise_and_with_logical_and(bool async)
-        {
-            await base.Where_bitwise_and_with_logical_and(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE FALSE
-""");
-        }
-
-        public override async Task Where_bitwise_or_with_logical_and(bool async)
-        {
-            await base.Where_bitwise_or_with_logical_and(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` IN ('ALFKI', 'ANATR') AND (`c`.`Country` = 'Germany')
-""");
-        }
-
-        public override async Task Where_bitwise_and_with_logical_or(bool async)
-        {
-            await base.Where_bitwise_and_with_logical_or(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
-FROM `Customers` AS `c`
-WHERE `c`.`CustomerID` = 'ANTON'
-""");
-        }
-
-        public override async Task Where_bitwise_binary_not(bool async)
-        {
-            await base.Where_bitwise_binary_not(async);
-
-            AssertSql(
-                @"@__negatedId_0='-10249'
-
-SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
-FROM `Orders` AS `o`
-WHERE CAST(~`o`.`OrderID` AS signed) = @__negatedId_0");
-        }
-
-        public override async Task Where_bitwise_binary_and(bool async)
-        {
-            await base.Where_bitwise_binary_and(async);
-
-            AssertSql(
-"""
-SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
-FROM `Orders` AS `o`
-WHERE CAST(`o`.`OrderID` & 10248 AS signed) = 10248
-""");
-        }
-
-        public override async Task Where_bitwise_binary_or(bool async)
-        {
-            await base.Where_bitwise_binary_or(async);
-
-            AssertSql(
-"""
-SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
-FROM `Orders` AS `o`
-WHERE CAST(`o`.`OrderID` | 10248 AS signed) = 10248
-""");
-        }
-
-        public override async Task Select_bitwise_or_with_logical_or(bool async)
-        {
-            await base.Select_bitwise_or_with_logical_or(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, `c`.`CustomerID` IN ('ALFKI', 'ANATR', 'ANTON') AS `Value`
-FROM `Customers` AS `c`
-ORDER BY `c`.`CustomerID`
-""");
-        }
-
-        public override async Task Select_bitwise_and_with_logical_and(bool async)
-        {
-            await base.Select_bitwise_and_with_logical_and(async);
-
-        AssertSql(
-"""
-SELECT `c`.`CustomerID`, FALSE AS `Value`
-FROM `Customers` AS `c`
-ORDER BY `c`.`CustomerID`
-""");
-        }
-
         [ConditionalTheory]
         public override async Task Take_Skip(bool async)
         {
@@ -193,18 +37,18 @@ ORDER BY `c`.`CustomerID`
 
         AssertSql(
 """
-@__p_0='10'
-@__p_1='5'
+@p='10'
+@p0='5'
 
 SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
 FROM (
     SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
     FROM `Customers` AS `c`
     ORDER BY `c`.`ContactName`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `c0`
 ORDER BY `c0`.`ContactName`
-LIMIT 18446744073709551610 OFFSET @__p_1
+LIMIT 18446744073709551610 OFFSET @p0
 """);
         }
 
@@ -214,11 +58,13 @@ LIMIT 18446744073709551610 OFFSET @__p_1
             await base.Select_expression_references_are_updated_correctly_with_subquery(async);
 
             AssertSql(
-                @"@__nextYear_0='2017'
+"""
+@nextYear='2017'
 
 SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`)
 FROM `Orders` AS `o`
-WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__nextYear_0)");
+WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @nextYear)
+""");
         }
 
         public override Task Entity_equality_orderby_subquery(bool async)
@@ -272,7 +118,7 @@ WHERE `o`.`OrderDate` IS NOT NULL AND (EXTRACT(year FROM `o`.`OrderDate`) < @__n
 
         AssertSql(
 """
-@__p_0='5'
+@p='5'
 
 SELECT `o1`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
@@ -280,7 +126,7 @@ FROM (
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
     ORDER BY `o`.`OrderID`
-    LIMIT 18446744073709551610 OFFSET @__p_0
+    LIMIT 18446744073709551610 OFFSET @p
 ) AS `o1`
 LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
 ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
@@ -311,8 +157,8 @@ ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
 
         AssertSql(
 """
-@__p_1='10'
-@__p_0='5'
+@p0='10'
+@p='5'
 
 SELECT `o1`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
@@ -320,7 +166,7 @@ FROM (
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
     ORDER BY `o`.`OrderID`
-    LIMIT @__p_1 OFFSET @__p_0
+    LIMIT @p0 OFFSET @p
 ) AS `o1`
 LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
 ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
@@ -350,7 +196,7 @@ ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
 
         AssertSql(
 """
-@__p_0='10'
+@p='10'
 
 SELECT `o1`.`OrderID`, `o0`.`ProductID`, `o0`.`OrderID`
 FROM (
@@ -358,7 +204,7 @@ FROM (
     FROM `Orders` AS `o`
     WHERE `o`.`OrderID` < 10300
     ORDER BY `o`.`OrderID`
-    LIMIT @__p_0
+    LIMIT @p
 ) AS `o1`
 LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
 ORDER BY `o1`.`OrderID`, `o0`.`ProductID`
@@ -509,6 +355,6569 @@ ORDER BY `o0`.`CustomerID`, `o1`.`OrderID`
         {
             return base.DefaultIfEmpty_Sum_over_collection_navigation(async);
         }
+
+
+    public override async Task Projecting_collection_split(bool async)
+    {
+        await base.Projecting_collection_split(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""",
+            //
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`CustomerID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Projecting_collection_then_include_split(bool async)
+    {
+        await base.Projecting_collection_then_include_split(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""",
+            //
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c`.`CustomerID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`, `o`.`OrderID`
+""",
+            //
+            """
+SELECT `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`, `c`.`CustomerID`, `o`.`OrderID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+INNER JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`, `o`.`OrderID`
+""");
+    }
+
+    public override async Task Multiple_context_instances(bool async)
+    {
+        await base.Multiple_context_instances(async);
+        AssertSql();
+    }
+
+    public override async Task Multiple_context_instances_2(bool async)
+    {
+        await base.Multiple_context_instances_2(async);
+        AssertSql();
+    }
+
+    public override async Task Multiple_context_instances_set(bool async)
+    {
+        await base.Multiple_context_instances_set(async);
+        AssertSql();
+    }
+
+    public override async Task Multiple_context_instances_parameter(bool async)
+    {
+        await base.Multiple_context_instances_parameter(async);
+        AssertSql();
+    }
+
+    public override async Task Query_when_evaluatable_queryable_method_call_with_repository(bool async)
+    {
+        await base.Query_when_evaluatable_queryable_method_call_with_repository(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` = `c`.`CustomerID`)
+""",
+            //
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` = `c`.`CustomerID`)
+""",
+            //
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` = `c`.`CustomerID`)
+""");
+    }
+
+    public override async Task Lifting_when_subquery_nested_order_by_simple(bool async)
+    {
+        await base.Lifting_when_subquery_nested_order_by_simple(async);
+        AssertSql(
+            """
+@p='2'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+INNER JOIN (
+    SELECT DISTINCT `c1`.`CustomerID`
+    FROM (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`CustomerID`
+        LIMIT @p
+    ) AS `c1`
+    CROSS JOIN `Customers` AS `c0`
+) AS `s` ON `o`.`CustomerID` = `s`.`CustomerID`
+ORDER BY `s`.`CustomerID`
+""");
+    }
+
+    public override async Task Lifting_when_subquery_nested_order_by_anonymous(bool async)
+    {
+        await base.Lifting_when_subquery_nested_order_by_anonymous(async);
+        AssertSql(
+            """
+@p='2'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+INNER JOIN (
+    SELECT DISTINCT `c1`.`CustomerID`
+    FROM (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`CustomerID`
+        LIMIT @p
+    ) AS `c1`
+    CROSS JOIN `Customers` AS `c0`
+) AS `s` ON `o`.`CustomerID` = `s`.`CustomerID`
+ORDER BY `s`.`CustomerID`
+""");
+    }
+
+    public override async Task Local_dictionary(bool async)
+    {
+        await base.Local_dictionary(async);
+        AssertSql(
+            """
+@p='ALFKI' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = @p
+LIMIT 2
+""");
+    }
+
+    public override async Task Shaper_command_caching_when_parameter_names_different(bool async)
+    {
+        await base.Shaper_command_caching_when_parameter_names_different(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""",
+            //
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task Can_convert_manually_build_expression_with_default(bool async)
+    {
+        await base.Can_convert_manually_build_expression_with_default(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`City` IS NOT NULL
+""",
+            //
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE `c`.`City` IS NOT NULL
+""");
+    }
+
+    public override async Task Entity_equality_self(bool async)
+    {
+        await base.Entity_equality_self(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Entity_equality_local(bool async)
+    {
+        await base.Entity_equality_local(async);
+        AssertSql(
+            """
+@entity_equality_local_CustomerID='ANATR' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = @entity_equality_local_CustomerID
+""");
+    }
+
+    public override async Task Entity_equality_local_composite_key(bool async)
+    {
+        await base.Entity_equality_local_composite_key(async);
+        AssertSql(
+            """
+@entity_equality_local_OrderID='10248' (Nullable = true)
+@entity_equality_local_ProductID='11' (Nullable = true)
+
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = @entity_equality_local_OrderID) AND (`o`.`ProductID` = @entity_equality_local_ProductID)
+""");
+    }
+
+    public override async Task Entity_equality_local_double_check(bool async)
+    {
+        await base.Entity_equality_local_double_check(async);
+        AssertSql(
+            """
+@entity_equality_local_CustomerID='ANATR' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = @entity_equality_local_CustomerID) AND (@entity_equality_local_CustomerID = `c`.`CustomerID`)
+""");
+    }
+
+    public override async Task Join_with_entity_equality_local_on_both_sources(bool async)
+    {
+        await base.Join_with_entity_equality_local_on_both_sources(async);
+        AssertSql(
+            """
+@entity_equality_local_CustomerID='ANATR' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+INNER JOIN (
+    SELECT `c0`.`CustomerID`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` = @entity_equality_local_CustomerID
+) AS `c1` ON `c`.`CustomerID` = `c1`.`CustomerID`
+WHERE `c`.`CustomerID` = @entity_equality_local_CustomerID
+""");
+    }
+
+    public override async Task Entity_equality_local_inline(bool async)
+    {
+        await base.Entity_equality_local_inline(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ANATR'
+""");
+    }
+
+    public override async Task Entity_equality_local_inline_composite_key(bool async)
+    {
+        await base.Entity_equality_local_inline_composite_key(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 10248) AND (`o`.`ProductID` = 11)
+""");
+    }
+
+    public override async Task Entity_equality_null(bool async)
+    {
+        await base.Entity_equality_null(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Entity_equality_null_composite_key(bool async)
+    {
+        await base.Entity_equality_null_composite_key(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Entity_equality_not_null(bool async)
+    {
+        await base.Entity_equality_not_null(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Entity_equality_not_null_composite_key(bool async)
+    {
+        await base.Entity_equality_not_null_composite_key(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+""");
+    }
+
+    public override async Task Entity_equality_through_nested_anonymous_type_projection(bool async)
+    {
+        await base.Entity_equality_through_nested_anonymous_type_projection(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+WHERE `c`.`CustomerID` IS NOT NULL
+""");
+    }
+
+    public override async Task Entity_equality_through_DTO_projection(bool async)
+    {
+        await base.Entity_equality_through_DTO_projection(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+WHERE `c`.`CustomerID` IS NOT NULL
+""");
+    }
+
+    public override async Task Entity_equality_through_subquery(bool async)
+    {
+        await base.Entity_equality_through_subquery(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`)
+""");
+    }
+
+    public override async Task Entity_equality_through_include(bool async)
+    {
+        await base.Entity_equality_through_include(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Entity_equality_orderby(bool async)
+    {
+        await base.Entity_equality_orderby(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Entity_equality_orderby_descending_composite_key(bool async)
+    {
+        await base.Entity_equality_orderby_descending_composite_key(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+ORDER BY `o`.`OrderID` DESC, `o`.`ProductID` DESC
+""");
+    }
+
+    public override async Task Entity_equality_orderby_descending_subquery_composite_key(bool async)
+    {
+        await base.Entity_equality_orderby_descending_subquery_composite_key(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+ORDER BY (
+    SELECT `o0`.`OrderID`
+    FROM `Order Details` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`
+    LIMIT 1) DESC, (
+    SELECT `o1`.`ProductID`
+    FROM `Order Details` AS `o1`
+    WHERE `o`.`OrderID` = `o1`.`OrderID`
+    LIMIT 1) DESC
+""");
+    }
+
+    public override async Task Queryable_simple(bool async)
+    {
+        await base.Queryable_simple(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Queryable_simple_anonymous(bool async)
+    {
+        await base.Queryable_simple_anonymous(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Queryable_simple_anonymous_projection_subquery(bool async)
+    {
+        await base.Queryable_simple_anonymous_projection_subquery(async);
+        AssertSql(
+            """
+@p='91'
+
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+LIMIT @p
+""");
+    }
+
+    public override async Task Queryable_simple_anonymous_subquery(bool async)
+    {
+        await base.Queryable_simple_anonymous_subquery(async);
+        AssertSql(
+            """
+@p='91'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+LIMIT @p
+""");
+    }
+
+    public override async Task Queryable_reprojection(bool async)
+    {
+        await base.Queryable_reprojection(async);
+        AssertSql();
+    }
+
+    public override async Task Queryable_nested_simple(bool async)
+    {
+        await base.Queryable_nested_simple(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Take_simple(bool async)
+    {
+        await base.Take_simple(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT @p
+""");
+    }
+
+    public override async Task Take_simple_parameterized(bool async)
+    {
+        await base.Take_simple_parameterized(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT @p
+""");
+    }
+
+    public override async Task Take_simple_projection(bool async)
+    {
+        await base.Take_simple_projection(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT @p
+""");
+    }
+
+    public override async Task Take_subquery_projection(bool async)
+    {
+        await base.Take_subquery_projection(async);
+        AssertSql(
+            """
+@p='2'
+
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT @p
+""");
+    }
+
+    public override async Task Skip(bool async)
+    {
+        await base.Skip(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT 18446744073709551610 OFFSET @p
+""");
+    }
+
+    public override async Task Skip_no_orderby(bool async)
+    {
+        await base.Skip_no_orderby(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+LIMIT 18446744073709551610 OFFSET @p
+""");
+    }
+
+    public override async Task Skip_orderby_const(bool async)
+    {
+        await base.Skip_orderby_const(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY (SELECT 1)
+LIMIT 18446744073709551610 OFFSET @p
+""");
+    }
+
+    public override async Task Distinct_Skip(bool async)
+    {
+        await base.Distinct_Skip(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+) AS `c0`
+ORDER BY `c0`.`CustomerID`
+LIMIT 18446744073709551610 OFFSET @p
+""");
+    }
+
+    public override async Task Skip_Take(bool async)
+    {
+        await base.Skip_Take(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`ContactName`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Join_Customers_Orders_Skip_Take(bool async)
+    {
+        await base.Join_Customers_Orders_Skip_Take(async);
+        AssertSql(
+            """
+@p0='5'
+@p='10'
+
+SELECT `c`.`ContactName`, `o`.`OrderID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+ORDER BY `o`.`OrderID`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Join_Customers_Orders_Skip_Take_followed_by_constant_projection(bool async)
+    {
+        await base.Join_Customers_Orders_Skip_Take_followed_by_constant_projection(async);
+        AssertSql(
+            """
+@p0='5'
+@p='10'
+
+SELECT 'Foo'
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+ORDER BY `o`.`OrderID`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Join_Customers_Orders_Projection_With_String_Concat_Skip_Take(bool async)
+    {
+        await base.Join_Customers_Orders_Projection_With_String_Concat_Skip_Take(async);
+        AssertSql(
+            """
+@p0='5'
+@p='10'
+
+SELECT CONCAT(CONCAT(COALESCE(`c`.`ContactName`, ''), ' '), COALESCE(`c`.`ContactTitle`, '')) AS `Contact`, `o`.`OrderID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+ORDER BY `o`.`OrderID`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Join_Customers_Orders_Orders_Skip_Take_Same_Properties(bool async)
+    {
+        await base.Join_Customers_Orders_Orders_Skip_Take_Same_Properties(async);
+        AssertSql(
+            """
+@p0='5'
+@p='10'
+
+SELECT `o`.`OrderID`, `c`.`CustomerID` AS `CustomerIDA`, `c0`.`CustomerID` AS `CustomerIDB`, `c`.`ContactName` AS `ContactNameA`, `c0`.`ContactName` AS `ContactNameB`
+FROM `Orders` AS `o`
+INNER JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+INNER JOIN `Customers` AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
+ORDER BY `o`.`OrderID`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Ternary_should_not_evaluate_both_sides(bool async)
+    {
+        await base.Ternary_should_not_evaluate_both_sides(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, 'none' AS `Data1`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Ternary_should_not_evaluate_both_sides_with_parameter(bool async)
+    {
+        await base.Ternary_should_not_evaluate_both_sides_with_parameter(async);
+        AssertSql(
+            """
+SELECT TRUE AS `Data1`
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Coalesce_Correct_Multiple_Same_TypeMapping(bool async)
+    {
+        await base.Coalesce_Correct_Multiple_Same_TypeMapping(async);
+        AssertSql(
+            """
+SELECT COALESCE(CAST(`e`.`ReportsTo` AS signed) + 1, CAST(`e`.`ReportsTo` AS signed) + 2, CAST(`e`.`ReportsTo` AS signed) + 3)
+FROM `Employees` AS `e`
+ORDER BY `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task Coalesce_Correct_TypeMapping_Double(bool async)
+    {
+        await base.Coalesce_Correct_TypeMapping_Double(async);
+        AssertSql();
+    }
+
+    public override async Task Coalesce_Correct_TypeMapping_String(bool async)
+    {
+        await base.Coalesce_Correct_TypeMapping_String(async);
+        AssertSql(
+            """
+SELECT COALESCE(`c`.`Region`, 'no region specified')
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Null_Coalesce_Short_Circuit(bool async)
+    {
+        await base.Null_Coalesce_Short_Circuit(async);
+        AssertSql(
+            """
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`, FALSE AS `Test`
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+) AS `c0`
+""");
+    }
+
+    public override async Task Null_Coalesce_Short_Circuit_with_server_correlated_leftover(bool async)
+    {
+        await base.Null_Coalesce_Short_Circuit_with_server_correlated_leftover(async);
+        AssertSql(
+            """
+SELECT FALSE AS `Result`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Distinct_Skip_Take(bool async)
+    {
+        await base.Distinct_Skip_Take(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+) AS `c0`
+ORDER BY `c0`.`ContactName`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Skip_Distinct(bool async)
+    {
+        await base.Skip_Distinct(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT DISTINCT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`ContactName`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Skip_Take_Distinct(bool async)
+    {
+        await base.Skip_Take_Distinct(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT DISTINCT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`ContactName`
+    LIMIT @p0 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Skip_Take_Any(bool async)
+    {
+        await base.Skip_Take_Any(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`ContactName`
+    LIMIT @p0 OFFSET @p)
+""");
+    }
+
+    public override async Task Skip_Take_All(bool async)
+    {
+        await base.Skip_Take_All(async);
+        AssertSql(
+            """
+@p0='7'
+@p='4'
+
+SELECT NOT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`CustomerID`
+        LIMIT @p0 OFFSET @p
+    ) AS `c0`
+    WHERE `c0`.`CustomerID` NOT LIKE 'B%')
+""");
+    }
+
+    public override async Task Take_All(bool async)
+    {
+        await base.Take_All(async);
+        AssertSql(
+            """
+@p='4'
+
+SELECT NOT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`CustomerID`
+        LIMIT @p
+    ) AS `c0`
+    WHERE `c0`.`CustomerID` NOT LIKE 'A%')
+""");
+    }
+
+    public override async Task Skip_Take_Any_with_predicate(bool async)
+    {
+        await base.Skip_Take_Any_with_predicate(async);
+        AssertSql(
+            """
+@p0='7'
+@p='5'
+
+SELECT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`CustomerID`
+        LIMIT @p0 OFFSET @p
+    ) AS `c0`
+    WHERE `c0`.`CustomerID` LIKE 'C%')
+""");
+    }
+
+    public override async Task Take_Any_with_predicate(bool async)
+    {
+        await base.Take_Any_with_predicate(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`CustomerID`
+        LIMIT @p
+    ) AS `c0`
+    WHERE `c0`.`CustomerID` LIKE 'B%')
+""");
+    }
+
+    public override async Task Take_Skip_Distinct(bool async)
+    {
+        await base.Take_Skip_Distinct(async);
+        AssertSql(
+            """
+@p='10'
+@p0='5'
+
+SELECT DISTINCT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM (
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM (
+        SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`ContactName`
+        LIMIT @p
+    ) AS `c0`
+    ORDER BY `c0`.`ContactName`
+    LIMIT 18446744073709551610 OFFSET @p0
+) AS `c1`
+""");
+    }
+
+    public override async Task Take_Skip_Distinct_Caching(bool async)
+    {
+        await base.Take_Skip_Distinct_Caching(async);
+        AssertSql(
+            """
+@p='10'
+@p0='5'
+
+SELECT DISTINCT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM (
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM (
+        SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`ContactName`
+        LIMIT @p
+    ) AS `c0`
+    ORDER BY `c0`.`ContactName`
+    LIMIT 18446744073709551610 OFFSET @p0
+) AS `c1`
+""",
+            //
+            """
+@p='15'
+@p0='10'
+
+SELECT DISTINCT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM (
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM (
+        SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`ContactName`
+        LIMIT @p
+    ) AS `c0`
+    ORDER BY `c0`.`ContactName`
+    LIMIT 18446744073709551610 OFFSET @p0
+) AS `c1`
+""");
+    }
+
+    public override async Task Take_Distinct(bool async)
+    {
+        await base.Take_Distinct(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT DISTINCT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Distinct_Take(bool async)
+    {
+        await base.Distinct_Take(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT DISTINCT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+) AS `o0`
+ORDER BY `o0`.`OrderID`
+LIMIT @p
+""");
+    }
+
+    public override async Task Distinct_Take_Count(bool async)
+    {
+        await base.Distinct_Take_Count(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Take_Distinct_Count(bool async)
+    {
+        await base.Take_Distinct_Count(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+        FROM `Orders` AS `o`
+        LIMIT @p
+    ) AS `o0`
+) AS `o1`
+""");
+    }
+
+    public override async Task Take_Where_Distinct_Count(bool async)
+    {
+        await base.Take_Where_Distinct_Count(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+        FROM `Orders` AS `o`
+        WHERE `o`.`CustomerID` = 'FRANK'
+        LIMIT @p
+    ) AS `o0`
+) AS `o1`
+""");
+    }
+
+    public override async Task Any_simple(bool async)
+    {
+        await base.Any_simple(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`)
+""");
+    }
+
+    public override async Task OrderBy_Take_Count(bool async)
+    {
+        await base.OrderBy_Take_Count(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Take_OrderBy_Count(bool async)
+    {
+        await base.Take_OrderBy_Count(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Orders` AS `o`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Any_predicate(bool async)
+    {
+        await base.Any_predicate(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    WHERE `c`.`ContactName` LIKE 'A%')
+""");
+    }
+
+    public override async Task Any_nested_negated(bool async)
+    {
+        await base.Any_nested_negated(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` LIKE 'A%')
+""");
+    }
+
+    public override async Task Any_nested_negated2(bool async)
+    {
+        await base.Any_nested_negated2(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE ((`c`.`City` <> 'London') OR `c`.`City` IS NULL) AND NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` LIKE 'ABC%')
+""");
+    }
+
+    public override async Task Any_nested_negated3(bool async)
+    {
+        await base.Any_nested_negated3(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` LIKE 'ABC%') AND ((`c`.`City` <> 'London') OR `c`.`City` IS NULL)
+""");
+    }
+
+    public override async Task Any_nested(bool async)
+    {
+        await base.Any_nested(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` LIKE 'A%')
+""");
+    }
+
+    public override async Task Any_nested2(bool async)
+    {
+        await base.Any_nested2(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE ((`c`.`City` <> 'London') OR `c`.`City` IS NULL) AND EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` LIKE 'A%')
+""");
+    }
+
+    public override async Task Any_nested3(bool async)
+    {
+        await base.Any_nested3(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` LIKE 'A%') AND ((`c`.`City` <> 'London') OR `c`.`City` IS NULL)
+""");
+    }
+
+    public override async Task Any_with_multiple_conditions_still_uses_exists(bool async)
+    {
+        await base.Any_with_multiple_conditions_still_uses_exists(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`City` = 'London') AND EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND (`o`.`EmployeeID` = 1))
+""");
+    }
+
+    public override async Task Any_on_distinct(bool async)
+    {
+        await base.Any_on_distinct(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND ((`o`.`EmployeeID` <> 1) OR `o`.`EmployeeID` IS NULL))
+""");
+    }
+
+    public override async Task Contains_on_distinct(bool async)
+    {
+        await base.Contains_on_distinct(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE 1 IN (
+    SELECT `o`.`EmployeeID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+)
+""");
+    }
+
+    public override async Task All_on_distinct(bool async)
+    {
+        await base.All_on_distinct(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT (COALESCE(1 IN (
+    SELECT `o`.`EmployeeID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+), FALSE))
+""");
+    }
+
+    public override async Task All_top_level(bool async)
+    {
+        await base.All_top_level(async);
+        AssertSql(
+            """
+SELECT NOT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    WHERE `c`.`ContactName` NOT LIKE 'A%' OR (`c`.`ContactName` IS NULL))
+""");
+    }
+
+    public override async Task All_top_level_column(bool async)
+    {
+        await base.All_top_level_column(async);
+        AssertSql(
+            """
+SELECT NOT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    WHERE `c`.`ContactName` IS NULL OR (LEFT(`c`.`ContactName`, CHAR_LENGTH(`c`.`ContactName`)) <> `c`.`ContactName`))
+""");
+    }
+
+    public override async Task All_top_level_subquery(bool async)
+    {
+        await base.All_top_level_subquery(async);
+        AssertSql(
+            """
+SELECT NOT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM `Customers` AS `c0`
+        WHERE EXISTS (
+            SELECT 1
+            FROM `Customers` AS `c1`
+            WHERE `c`.`CustomerID` = `c1`.`CustomerID`)))
+""");
+    }
+
+    public override async Task All_top_level_subquery_ef_property(bool async)
+    {
+        await base.All_top_level_subquery_ef_property(async);
+        AssertSql(
+            """
+SELECT NOT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM `Customers` AS `c0`
+        WHERE EXISTS (
+            SELECT 1
+            FROM `Customers` AS `c1`
+            WHERE `c`.`CustomerID` = `c1`.`CustomerID`)))
+""");
+    }
+
+    public override async Task All_client(bool async)
+    {
+        await base.All_client(async);
+        AssertSql();
+    }
+
+    public override async Task All_client_and_server_top_level(bool async)
+    {
+        await base.All_client_and_server_top_level(async);
+        AssertSql();
+    }
+
+    public override async Task All_client_or_server_top_level(bool async)
+    {
+        await base.All_client_or_server_top_level(async);
+        AssertSql();
+    }
+
+    public override async Task Take_with_single(bool async)
+    {
+        await base.Take_with_single(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Take_with_single_select_many(bool async)
+    {
+        await base.Take_with_single_select_many(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+ORDER BY `c`.`CustomerID`, `o`.`OrderID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Cast_results_to_object(bool async)
+    {
+        await base.Cast_results_to_object(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task First_client_predicate(bool async)
+    {
+        await base.First_client_predicate(async);
+        AssertSql();
+    }
+
+    public override async Task Where_select_many_or(bool async)
+    {
+        await base.Where_select_many_or(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE (`c`.`City` = 'London') OR (`e`.`City` = 'London')
+""");
+    }
+
+    public override async Task Where_select_many_or2(bool async)
+    {
+        await base.Where_select_many_or2(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE `c`.`City` IN ('London', 'Berlin')
+""");
+    }
+
+    public override async Task Where_select_many_or3(bool async)
+    {
+        await base.Where_select_many_or3(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE `c`.`City` IN ('London', 'Berlin', 'Seattle')
+""");
+    }
+
+    public override async Task Where_select_many_or4(bool async)
+    {
+        await base.Where_select_many_or4(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE `c`.`City` IN ('London', 'Berlin', 'Seattle', 'Lisboa')
+""");
+    }
+
+    public override async Task Where_select_many_or_with_parameter(bool async)
+    {
+        await base.Where_select_many_or_with_parameter(async);
+        AssertSql(
+            """
+@london='London' (Size = 15)
+@lisboa='Lisboa' (Size = 15)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE (((`c`.`City` = @london) OR (`c`.`City` = 'Berlin')) OR (`c`.`City` = 'Seattle')) OR (`c`.`City` = @lisboa)
+""");
+    }
+
+    public override async Task Where_subquery_anon(bool async)
+    {
+        await base.Where_subquery_anon(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `e0`.`EmployeeID`, `e0`.`City`, `e0`.`Country`, `e0`.`FirstName`, `e0`.`ReportsTo`, `e0`.`Title`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    ORDER BY `e`.`EmployeeID`
+    LIMIT @p
+) AS `e0`
+CROSS JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 5
+) AS `o0`
+WHERE `e0`.`EmployeeID` = `o0`.`EmployeeID`
+ORDER BY `e0`.`EmployeeID`
+""");
+    }
+
+    public override async Task Where_subquery_anon_nested(bool async)
+    {
+        await base.Where_subquery_anon_nested(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `e0`.`EmployeeID`, `e0`.`City`, `e0`.`Country`, `e0`.`FirstName`, `e0`.`ReportsTo`, `e0`.`Title`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`, `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    ORDER BY `e`.`EmployeeID`
+    LIMIT @p
+) AS `e0`
+CROSS JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 5
+) AS `o0`
+CROSS JOIN (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`CustomerID`
+    LIMIT 2
+) AS `c0`
+WHERE `e0`.`City` = 'Seattle'
+ORDER BY `e0`.`EmployeeID`
+""");
+    }
+
+    public override async Task Where_subquery_expression(bool async)
+    {
+        await base.Where_subquery_expression(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+LIMIT 1
+""",
+            //
+            """
+@firstOrder_OrderID='10248'
+
+SELECT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` = @firstOrder_OrderID)
+""",
+            //
+            """
+@Any='True'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE @Any
+""");
+    }
+
+    public override async Task Where_subquery_expression_same_parametername(bool async)
+    {
+        await base.Where_subquery_expression_same_parametername(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+ORDER BY `o`.`OrderID`
+LIMIT 1
+""",
+            //
+            """
+@firstOrder_OrderID='10248'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o0`
+    WHERE (`o0`.`OrderID` = @firstOrder_OrderID) AND ((`o0`.`CustomerID` = `o`.`CustomerID`) OR (`o0`.`CustomerID` IS NULL AND (`o`.`CustomerID` IS NULL))))
+""");
+    }
+
+    public override async Task Select_DTO_distinct_translated_to_server(bool async)
+    {
+        await base.Select_DTO_distinct_translated_to_server(async);
+        AssertSql(
+            """
+SELECT DISTINCT 1
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+    }
+
+    public override async Task Select_DTO_constructor_distinct_translated_to_server(bool async)
+    {
+        await base.Select_DTO_constructor_distinct_translated_to_server(async);
+        AssertSql(
+            """
+SELECT DISTINCT `o`.`CustomerID`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+    }
+
+    public override async Task Select_DTO_constructor_distinct_with_navigation_translated_to_server(bool async)
+    {
+        await base.Select_DTO_constructor_distinct_with_navigation_translated_to_server(async);
+        AssertSql(
+            """
+SELECT DISTINCT `c`.`City`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+WHERE `o`.`OrderID` < 10300
+""");
+    }
+
+    public override async Task Select_DTO_constructor_distinct_with_collection_projection_translated_to_server(bool async)
+    {
+        await base.Select_DTO_constructor_distinct_with_collection_projection_translated_to_server(async);
+        AssertSql(
+            """
+SELECT `o0`.`CustomerID`, `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT DISTINCT `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+) AS `o0`
+LEFT JOIN `Orders` AS `o1` ON `o0`.`CustomerID` = `o1`.`CustomerID`
+ORDER BY `o0`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_DTO_with_member_init_distinct_translated_to_server(bool async)
+    {
+        await base.Select_DTO_with_member_init_distinct_translated_to_server(async);
+        AssertSql(
+            """
+SELECT DISTINCT `o`.`CustomerID` AS `Id`, `o`.`OrderID` AS `Count`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10300
+""");
+    }
+
+    public override async Task Select_nested_collection_count_using_DTO(bool async)
+    {
+        await base.Select_nested_collection_count_using_DTO(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id`, (
+    SELECT COUNT(*)
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) AS `Count`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+""");
+    }
+
+    public override async Task Select_DTO_with_member_init_distinct_in_subquery_translated_to_server(bool async)
+    {
+        await base.Select_DTO_with_member_init_distinct_in_subquery_translated_to_server(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM (
+    SELECT DISTINCT `o`.`CustomerID` AS `Id`, `o`.`OrderID` AS `Count`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+) AS `o0`
+INNER JOIN `Customers` AS `c` ON `o0`.`Id` = `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_DTO_with_member_init_distinct_in_subquery_translated_to_server_2(bool async)
+    {
+        await base.Select_DTO_with_member_init_distinct_in_subquery_translated_to_server_2(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM (
+    SELECT DISTINCT `o`.`CustomerID` AS `Id`, `o`.`OrderID` AS `Count`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+) AS `o0`
+INNER JOIN `Customers` AS `c` ON `o0`.`Id` = `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_DTO_with_member_init_distinct_in_subquery_used_in_projection_translated_to_server(bool async)
+    {
+        await base.Select_DTO_with_member_init_distinct_in_subquery_used_in_projection_translated_to_server(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o0`.`Id`, `o0`.`Count`
+FROM `Customers` AS `c`
+CROSS JOIN (
+    SELECT DISTINCT `o`.`CustomerID` AS `Id`, `o`.`OrderID` AS `Count`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+) AS `o0`
+WHERE `c`.`CustomerID` LIKE 'A%'
+""");
+    }
+
+    public override async Task Select_correlated_subquery_filtered_returning_queryable_throws(bool async)
+    {
+        await base.Select_correlated_subquery_filtered_returning_queryable_throws(async);
+        AssertSql();
+    }
+
+    public override async Task Select_correlated_subquery_ordered_returning_queryable_throws(bool async)
+    {
+        await base.Select_correlated_subquery_ordered_returning_queryable_throws(async);
+        AssertSql();
+    }
+
+    public override async Task Select_correlated_subquery_ordered_returning_queryable_in_DTO_throws(bool async)
+    {
+        await base.Select_correlated_subquery_ordered_returning_queryable_in_DTO_throws(async);
+        AssertSql();
+    }
+
+    public override async Task Select_correlated_subquery_filtered(bool async)
+    {
+        await base.Select_correlated_subquery_filtered(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Customers` AS `c`
+LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_correlated_subquery_ordered(bool async)
+    {
+        await base.Select_correlated_subquery_ordered(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `c0`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`CustomerID`
+    LIMIT @p
+) AS `c0`
+LEFT JOIN LATERAL (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, `c0`.`CustomerID` AS `CustomerID0`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`, `c0`.`CustomerID`
+    LIMIT 2 OFFSET 100
+) AS `o0` ON TRUE
+ORDER BY `c0`.`CustomerID`, `o0`.`OrderID`, `o0`.`CustomerID0`
+""");
+    }
+
+    public override async Task Select_nested_collection_in_anonymous_type_returning_ordered_queryable(bool async)
+    {
+        await base.Select_nested_collection_in_anonymous_type_returning_ordered_queryable(async);
+        AssertSql();
+    }
+
+    public override async Task Select_subquery_recursive_trivial_returning_queryable(bool async)
+    {
+        await base.Select_subquery_recursive_trivial_returning_queryable(async);
+        AssertSql();
+    }
+
+    public override async Task Select_nested_collection_in_anonymous_type(bool async)
+    {
+        await base.Select_nested_collection_in_anonymous_type(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `o0`.`OrderID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1997
+) AS `o0` ON `c`.`CustomerID` = `o0`.`CustomerID`
+WHERE `c`.`CustomerID` = 'ALFKI'
+ORDER BY `c`.`CustomerID`, `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Select_subquery_recursive_trivial(bool async)
+    {
+        await base.Select_subquery_recursive_trivial(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `s`.`EmployeeID`, `s`.`EmployeeID0`, `s`.`City`, `s`.`Country`, `s`.`FirstName`, `s`.`ReportsTo`, `s`.`Title`
+FROM `Employees` AS `e`
+LEFT JOIN LATERAL (
+    SELECT `e0`.`EmployeeID`, `e1`.`EmployeeID` AS `EmployeeID0`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+    FROM `Employees` AS `e0`
+    LEFT JOIN `Employees` AS `e1` ON TRUE
+) AS `s` ON TRUE
+ORDER BY `e`.`EmployeeID`, `s`.`EmployeeID`, `s`.`EmployeeID0`
+""");
+    }
+
+    public override async Task Where_subquery_on_bool(bool async)
+    {
+        await base.Where_subquery_on_bool(async);
+        AssertSql(
+            """
+SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+FROM `Products` AS `p`
+WHERE 'Chai' IN (
+    SELECT `p0`.`ProductName`
+    FROM `Products` AS `p0`
+)
+""");
+    }
+
+    public override async Task Where_subquery_on_collection(bool async)
+    {
+        await base.Where_subquery_on_collection(async);
+        AssertSql(
+            """
+SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+FROM `Products` AS `p`
+WHERE 5 IN (
+    SELECT `o`.`Quantity`
+    FROM `Order Details` AS `o`
+    WHERE `o`.`ProductID` = `p`.`ProductID`
+)
+""");
+    }
+
+    public override async Task Where_query_composition(bool async)
+    {
+        await base.Where_query_composition(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE `e`.`FirstName` = (
+    SELECT `e0`.`FirstName`
+    FROM `Employees` AS `e0`
+    ORDER BY `e0`.`EmployeeID`
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Where_query_composition_is_null(bool async)
+    {
+        await base.Where_query_composition_is_null(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    ORDER BY `e`.`EmployeeID`
+    LIMIT @p
+) AS `e1`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = `e1`.`ReportsTo`)
+ORDER BY `e1`.`EmployeeID`
+""");
+    }
+
+    public override async Task Where_query_composition_is_not_null(bool async)
+    {
+        await base.Where_query_composition_is_not_null(async);
+        AssertSql(
+            """
+@p0='3'
+@p='4'
+
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    ORDER BY `e`.`EmployeeID`
+    LIMIT @p0 OFFSET @p
+) AS `e1`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = `e1`.`ReportsTo`)
+ORDER BY `e1`.`EmployeeID`
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_one_element_SingleOrDefault(bool async)
+    {
+        await base.Where_query_composition_entity_equality_one_element_SingleOrDefault(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = `e`.`ReportsTo`
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_one_element_Single(bool async)
+    {
+        await base.Where_query_composition_entity_equality_one_element_Single(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = `e`.`ReportsTo`
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_one_element_FirstOrDefault(bool async)
+    {
+        await base.Where_query_composition_entity_equality_one_element_FirstOrDefault(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = `e`.`ReportsTo`
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_one_element_First(bool async)
+    {
+        await base.Where_query_composition_entity_equality_one_element_First(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = `e`.`ReportsTo`
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_no_elements_SingleOrDefault(bool async)
+    {
+        await base.Where_query_composition_entity_equality_no_elements_SingleOrDefault(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = 42
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_no_elements_Single(bool async)
+    {
+        await base.Where_query_composition_entity_equality_no_elements_Single(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = 42
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_no_elements_FirstOrDefault(bool async)
+    {
+        await base.Where_query_composition_entity_equality_no_elements_FirstOrDefault(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = 42
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_no_elements_First(bool async)
+    {
+        await base.Where_query_composition_entity_equality_no_elements_First(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE `e0`.`EmployeeID` = 42
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_multiple_elements_SingleOrDefault(bool async)
+    {
+        await base.Where_query_composition_entity_equality_multiple_elements_SingleOrDefault(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE (`e0`.`EmployeeID` <> `e`.`ReportsTo`) OR `e`.`ReportsTo` IS NULL
+    ORDER BY `e0`.`EmployeeID`
+    LIMIT 1) = 1
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_multiple_elements_Single(bool async)
+    {
+        await base.Where_query_composition_entity_equality_multiple_elements_Single(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE (`e0`.`EmployeeID` <> `e`.`ReportsTo`) OR `e`.`ReportsTo` IS NULL
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_multiple_elements_FirstOrDefault(bool async)
+    {
+        await base.Where_query_composition_entity_equality_multiple_elements_FirstOrDefault(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE (`e0`.`EmployeeID` <> `e`.`ReportsTo`) OR `e`.`ReportsTo` IS NULL
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition_entity_equality_multiple_elements_First(bool async)
+    {
+        await base.Where_query_composition_entity_equality_multiple_elements_First(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE (
+    SELECT `e0`.`EmployeeID`
+    FROM `Employees` AS `e0`
+    WHERE (`e0`.`EmployeeID` <> `e`.`ReportsTo`) OR `e`.`ReportsTo` IS NULL
+    LIMIT 1) = 0
+""");
+    }
+
+    public override async Task Where_query_composition2(bool async)
+    {
+        await base.Where_query_composition2(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    LIMIT @p
+) AS `e1`
+WHERE `e1`.`FirstName` = (
+    SELECT `e0`.`FirstName`
+    FROM `Employees` AS `e0`
+    ORDER BY `e0`.`EmployeeID`
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Where_query_composition2_FirstOrDefault(bool async)
+    {
+        await base.Where_query_composition2_FirstOrDefault(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    LIMIT @p
+) AS `e1`
+WHERE `e1`.`FirstName` = (
+    SELECT `e0`.`FirstName`
+    FROM `Employees` AS `e0`
+    ORDER BY `e0`.`EmployeeID`
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Where_query_composition2_FirstOrDefault_with_anonymous(bool async)
+    {
+        await base.Where_query_composition2_FirstOrDefault_with_anonymous(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    LIMIT @p
+) AS `e1`
+WHERE `e1`.`FirstName` = (
+    SELECT `e0`.`FirstName`
+    FROM `Employees` AS `e0`
+    ORDER BY `e0`.`EmployeeID`
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Where_query_composition3(bool async)
+    {
+        await base.Where_query_composition3(async);
+        AssertSql();
+    }
+
+    public override async Task Where_query_composition4(bool async)
+    {
+        await base.Where_query_composition4(async);
+        AssertSql();
+    }
+
+    public override async Task Where_query_composition5(bool async)
+    {
+        await base.Where_query_composition5(async);
+        AssertSql();
+    }
+
+    public override async Task Where_query_composition6(bool async)
+    {
+        await base.Where_query_composition6(async);
+        AssertSql();
+    }
+
+    public override async Task Where_subquery_recursive_trivial(bool async)
+    {
+        await base.Where_subquery_recursive_trivial(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e0`
+    WHERE EXISTS (
+        SELECT 1
+        FROM `Employees` AS `e1`))
+ORDER BY `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task OrderBy_scalar_primitive(bool async)
+    {
+        await base.OrderBy_scalar_primitive(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`
+FROM `Employees` AS `e`
+ORDER BY `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task SelectMany_mixed(bool async)
+    {
+        await base.SelectMany_mixed(async);
+        AssertSql();
+    }
+
+    public override async Task SelectMany_simple1(bool async)
+    {
+        await base.SelectMany_simple1(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+CROSS JOIN `Customers` AS `c`
+""");
+    }
+
+    public override async Task SelectMany_simple_subquery(bool async)
+    {
+        await base.SelectMany_simple_subquery(async);
+        AssertSql(
+            """
+@p='9'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e0`.`EmployeeID`, `e0`.`City`, `e0`.`Country`, `e0`.`FirstName`, `e0`.`ReportsTo`, `e0`.`Title`
+FROM (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    LIMIT @p
+) AS `e0`
+CROSS JOIN `Customers` AS `c`
+""");
+    }
+
+    public override async Task SelectMany_simple2(bool async)
+    {
+        await base.SelectMany_simple2(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`, `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e0`.`FirstName`
+FROM `Employees` AS `e`
+CROSS JOIN `Customers` AS `c`
+CROSS JOIN `Employees` AS `e0`
+""");
+    }
+
+    public override async Task SelectMany_entity_deep(bool async)
+    {
+        await base.SelectMany_entity_deep(async);
+        AssertSql(
+            """
+SELECT `e0`.`EmployeeID`, `e0`.`City`, `e0`.`Country`, `e0`.`FirstName`, `e0`.`ReportsTo`, `e0`.`Title`, `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`, `e2`.`EmployeeID`, `e2`.`City`, `e2`.`Country`, `e2`.`FirstName`, `e2`.`ReportsTo`, `e2`.`Title`
+FROM `Employees` AS `e`
+CROSS JOIN `Employees` AS `e0`
+CROSS JOIN `Employees` AS `e1`
+CROSS JOIN `Employees` AS `e2`
+""");
+    }
+
+    public override async Task SelectMany_projection1(bool async)
+    {
+        await base.SelectMany_projection1(async);
+        AssertSql(
+            """
+SELECT `e`.`City`, `e0`.`Country`
+FROM `Employees` AS `e`
+CROSS JOIN `Employees` AS `e0`
+""");
+    }
+
+    public override async Task SelectMany_projection2(bool async)
+    {
+        await base.SelectMany_projection2(async);
+        AssertSql(
+            """
+SELECT `e`.`City`, `e0`.`Country`, `e1`.`FirstName`
+FROM `Employees` AS `e`
+CROSS JOIN `Employees` AS `e0`
+CROSS JOIN `Employees` AS `e1`
+""");
+    }
+
+    public override async Task SelectMany_nested_simple(bool async)
+    {
+        await base.SelectMany_nested_simple(async);
+        AssertSql(
+            """
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c`
+CROSS JOIN `Customers` AS `c0`
+ORDER BY `c0`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_correlated_simple(bool async)
+    {
+        await base.SelectMany_correlated_simple(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE (`c`.`City` = `e`.`City`) OR (`c`.`City` IS NULL AND (`e`.`City` IS NULL))
+ORDER BY `c`.`CustomerID`, `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task SelectMany_correlated_subquery_simple(bool async)
+    {
+        await base.SelectMany_correlated_subquery_simple(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Customers` AS `c`
+INNER JOIN `Employees` AS `e` ON `c`.`City` = `e`.`City`
+ORDER BY `c`.`CustomerID`, `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task SelectMany_correlated_with_DefaultIfEmpty_and_Select_value_type_in_selector_throws(bool async)
+    {
+        await base.SelectMany_correlated_with_DefaultIfEmpty_and_Select_value_type_in_selector_throws(async);
+        AssertSql(
+            """
+SELECT `o0`.`OrderID`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` = 'NONEXISTENT'
+) AS `o0` ON `c`.`CustomerID` = `o0`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_correlated_with_Select_value_type_and_DefaultIfEmpty_in_selector(bool async)
+    {
+        await base.SelectMany_correlated_with_Select_value_type_and_DefaultIfEmpty_in_selector(async);
+        AssertSql(
+            """
+SELECT COALESCE(`o0`.`OrderID`, 0)
+FROM `Customers` AS `c`
+LEFT JOIN LATERAL (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND (`o`.`CustomerID` = 'NONEXISTENT')
+    LIMIT 2
+) AS `o0` ON TRUE
+""");
+    }
+
+    public override async Task SelectMany_correlated_subquery_hard(bool async)
+    {
+        await base.SelectMany_correlated_subquery_hard(async);
+        AssertSql(
+            """
+@p='91'
+
+SELECT `c1`.`City` AS `c1`, `e0`.`City`, `e0`.`c1`
+FROM (
+    SELECT DISTINCT `c0`.`City`
+    FROM (
+        SELECT `c`.`City`
+        FROM `Customers` AS `c`
+        LIMIT @p
+    ) AS `c0`
+) AS `c1`
+JOIN LATERAL (
+    SELECT `e`.`City`, `c1`.`City` AS `c1`
+    FROM `Employees` AS `e`
+    WHERE (`c1`.`City` = `e`.`City`) OR (`c1`.`City` IS NULL AND (`e`.`City` IS NULL))
+    LIMIT 9
+) AS `e0` ON TRUE
+JOIN LATERAL (
+    SELECT 1
+    FROM `Employees` AS `e1`
+    WHERE (`e0`.`City` = `e1`.`City`) OR (`e0`.`City` IS NULL AND (`e1`.`City` IS NULL))
+    LIMIT 9
+) AS `e2` ON TRUE
+""");
+    }
+
+    public override async Task SelectMany_cartesian_product_with_ordering(bool async)
+    {
+        await base.SelectMany_cartesian_product_with_ordering(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `e`.`City`
+FROM `Customers` AS `c`
+CROSS JOIN `Employees` AS `e`
+WHERE (`c`.`City` = `e`.`City`) OR (`c`.`City` IS NULL AND (`e`.`City` IS NULL))
+ORDER BY `e`.`City`, `c`.`CustomerID` DESC
+""");
+    }
+
+    public override async Task SelectMany_primitive(bool async)
+    {
+        await base.SelectMany_primitive(async);
+        AssertSql(
+            """
+SELECT `e0`.`EmployeeID`
+FROM `Employees` AS `e`
+CROSS JOIN `Employees` AS `e0`
+""");
+    }
+
+    public override async Task SelectMany_primitive_select_subquery(bool async)
+    {
+        await base.SelectMany_primitive_select_subquery(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e`)
+""",
+            //
+            """
+@Any='True'
+
+SELECT @Any
+FROM `Employees` AS `e`
+CROSS JOIN `Employees` AS `e0`
+""");
+    }
+
+    public override async Task Join_Where_Count(bool async)
+    {
+        await base.Join_Where_Count(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task Where_Join_Any(bool async)
+    {
+        await base.Where_Join_Any(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` LIKE 'A%') AND EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND (`o`.`OrderDate` = TIMESTAMP '1998-01-15 00:00:00'))
+""");
+    }
+
+    public override async Task Where_Join_Exists(bool async)
+    {
+        await base.Where_Join_Exists(async);
+        AssertSql();
+    }
+
+    public override async Task Where_Join_Exists_Inequality(bool async)
+    {
+        await base.Where_Join_Exists_Inequality(async);
+        AssertSql();
+    }
+
+    public override async Task Where_Join_Exists_Constant(bool async)
+    {
+        await base.Where_Join_Exists_Constant(async);
+        AssertSql();
+    }
+
+    public override async Task Where_Join_Not_Exists(bool async)
+    {
+        await base.Where_Join_Not_Exists(async);
+        AssertSql();
+    }
+
+    public override async Task Multiple_joins_Where_Order_Any(bool async)
+    {
+        await base.Multiple_joins_Where_Order_Any(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+    INNER JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
+    WHERE `c`.`City` = 'London')
+""");
+    }
+
+    public override async Task Join_OrderBy_Count(bool async)
+    {
+        await base.Join_OrderBy_Count(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+""");
+    }
+
+    public override async Task Where_join_select(bool async)
+    {
+        await base.Where_join_select(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task Where_orderby_join_select(bool async)
+    {
+        await base.Where_orderby_join_select(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` <> 'ALFKI'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Where_join_orderby_join_select(bool async)
+    {
+        await base.Where_join_orderby_join_select(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+INNER JOIN `Order Details` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
+WHERE `c`.`CustomerID` <> 'ALFKI'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Where_select_many(bool async)
+    {
+        await base.Where_select_many(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task Where_orderby_select_many(bool async)
+    {
+        await base.Where_orderby_select_many(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+WHERE `c`.`CustomerID` = 'ALFKI'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level(bool async)
+    {
+        await base.DefaultIfEmpty_top_level(async);
+        AssertSql(
+            """
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT 1
+) AS `e0`
+LEFT JOIN (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    WHERE `e`.`EmployeeID` = -1
+) AS `e1` ON TRUE
+""");
+    }
+
+    public override async Task Join_with_DefaultIfEmpty_on_both_sources(bool async)
+    {
+        await base.Join_with_DefaultIfEmpty_on_both_sources(async);
+        AssertSql(
+            """
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT 1
+) AS `e0`
+LEFT JOIN (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    WHERE `e`.`EmployeeID` = -1
+) AS `e1` ON TRUE
+INNER JOIN (
+    SELECT `e4`.`EmployeeID`
+    FROM (
+        SELECT 1
+    ) AS `e3`
+    LEFT JOIN (
+        SELECT `e2`.`EmployeeID`
+        FROM `Employees` AS `e2`
+        WHERE `e2`.`EmployeeID` = -1
+    ) AS `e4` ON TRUE
+) AS `s` ON `e1`.`EmployeeID` = `s`.`EmployeeID`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_followed_by_constant_Select(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_followed_by_constant_Select(async);
+        AssertSql(
+            """
+SELECT 'Foo'
+FROM (
+    SELECT 1
+) AS `e0`
+LEFT JOIN (
+    SELECT 1
+    FROM `Employees` AS `e`
+    WHERE `e`.`EmployeeID` = -1
+) AS `e1` ON TRUE
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_preceded_by_constant_Select(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_preceded_by_constant_Select(async);
+        AssertSql(
+            """
+SELECT `e1`.`c`
+FROM (
+    SELECT 1
+) AS `e0`
+LEFT JOIN (
+    SELECT 'Foo' AS `c`
+    FROM `Employees` AS `e`
+    WHERE `e`.`EmployeeID` = -1
+) AS `e1` ON TRUE
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_arg(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_arg(async);
+        AssertSql();
+    }
+
+    public override async Task DefaultIfEmpty_top_level_arg_followed_by_projecting_constant(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_arg_followed_by_projecting_constant(async);
+        AssertSql();
+    }
+
+    public override async Task DefaultIfEmpty_top_level_positive(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_positive(async);
+        AssertSql(
+            """
+SELECT `e1`.`EmployeeID`, `e1`.`City`, `e1`.`Country`, `e1`.`FirstName`, `e1`.`ReportsTo`, `e1`.`Title`
+FROM (
+    SELECT 1
+) AS `e0`
+LEFT JOIN (
+    SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+    FROM `Employees` AS `e`
+    WHERE `e`.`EmployeeID` > 0
+) AS `e1` ON TRUE
+""");
+    }
+
+    public override async Task DefaultIfEmpty_top_level_projection(bool async)
+    {
+        await base.DefaultIfEmpty_top_level_projection(async);
+        AssertSql(
+            """
+SELECT COALESCE(`e1`.`EmployeeID`, 0)
+FROM (
+    SELECT 1
+) AS `e0`
+LEFT JOIN (
+    SELECT `e`.`EmployeeID`
+    FROM `Employees` AS `e`
+    WHERE `e`.`EmployeeID` = -1
+) AS `e1` ON TRUE
+""");
+    }
+
+    public override async Task SelectMany_customer_orders(bool async)
+    {
+        await base.SelectMany_customer_orders(async);
+        AssertSql(
+            """
+SELECT `c`.`ContactName`, `o`.`OrderID`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+WHERE `c`.`CustomerID` = `o`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_Count(bool async)
+    {
+        await base.SelectMany_Count(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+""");
+    }
+
+    public override async Task SelectMany_LongCount(bool async)
+    {
+        await base.SelectMany_LongCount(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+""");
+    }
+
+    public override async Task SelectMany_OrderBy_ThenBy_Any(bool async)
+    {
+        await base.SelectMany_OrderBy_ThenBy_Any(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`
+    CROSS JOIN `Orders` AS `o`)
+""");
+    }
+
+    public override async Task OrderBy(bool async)
+    {
+        await base.OrderBy(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_true(bool async)
+    {
+        await base.OrderBy_true(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task OrderBy_integer(bool async)
+    {
+        await base.OrderBy_integer(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task OrderBy_parameter(bool async)
+    {
+        await base.OrderBy_parameter(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task OrderBy_anon(bool async)
+    {
+        await base.OrderBy_anon(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_anon2(bool async)
+    {
+        await base.OrderBy_anon2(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_client_mixed(bool async)
+    {
+        await base.OrderBy_client_mixed(async);
+        AssertSql();
+    }
+
+    public override async Task OrderBy_multiple_queries(bool async)
+    {
+        await base.OrderBy_multiple_queries(async);
+        AssertSql();
+    }
+
+    public override async Task OrderBy_shadow(bool async)
+    {
+        await base.OrderBy_shadow(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+ORDER BY `e`.`Title`, `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task OrderBy_ThenBy_predicate(bool async)
+    {
+        await base.OrderBy_ThenBy_predicate(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`City` = 'London'
+ORDER BY `c`.`City`, `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_correlated_subquery1(bool async)
+    {
+        await base.OrderBy_correlated_subquery1(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` = `c`.`CustomerID`), `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_correlated_subquery2(bool async)
+    {
+        await base.OrderBy_correlated_subquery2(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE (`o`.`OrderID` <= 10250) AND (((
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    ORDER BY EXISTS (
+        SELECT 1
+        FROM `Customers` AS `c0`
+        WHERE `c0`.`CustomerID` = 'ALFKI')
+    LIMIT 1) <> 'Nowhere') OR (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    ORDER BY EXISTS (
+        SELECT 1
+        FROM `Customers` AS `c0`
+        WHERE `c0`.`CustomerID` = 'ALFKI')
+    LIMIT 1) IS NULL)
+""");
+    }
+
+    public override async Task OrderBy_Select(bool async)
+    {
+        await base.OrderBy_Select(async);
+        AssertSql(
+            """
+SELECT `c`.`ContactName`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_multiple(bool async)
+    {
+        await base.OrderBy_multiple(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`Country`, `c`.`City`
+""");
+    }
+
+    public override async Task OrderBy_ThenBy(bool async)
+    {
+        await base.OrderBy_ThenBy(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`, `c`.`Country`
+""");
+    }
+
+    public override async Task OrderByDescending(bool async)
+    {
+        await base.OrderByDescending(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID` DESC
+""");
+    }
+
+    public override async Task OrderByDescending_ThenBy(bool async)
+    {
+        await base.OrderByDescending_ThenBy(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID` DESC, `c`.`Country`
+""");
+    }
+
+    public override async Task OrderByDescending_ThenByDescending(bool async)
+    {
+        await base.OrderByDescending_ThenByDescending(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID` DESC, `c`.`Country` DESC
+""");
+    }
+
+    public override async Task Select_Order(bool async)
+    {
+        await base.Select_Order(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_OrderDescending(bool async)
+    {
+        await base.Select_OrderDescending(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID` DESC
+""");
+    }
+
+    public override async Task Where_Order_First(bool async)
+    {
+        await base.Where_Order_First(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID`
+    LIMIT 1) = 10248
+""");
+    }
+
+    public override async Task OrderBy_ThenBy_Any(bool async)
+    {
+        await base.OrderBy_ThenBy_Any(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c`)
+""");
+    }
+
+    public override async Task OrderBy_Join(bool async)
+    {
+        await base.OrderBy_Join(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `o`.`OrderID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_SelectMany(bool async)
+    {
+        await base.OrderBy_SelectMany(async);
+        AssertSql(
+            """
+SELECT `c`.`ContactName`, `o0`.`OrderID`
+FROM `Customers` AS `c`
+CROSS JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 3
+) AS `o0`
+WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Let_any_subquery_anonymous(bool async)
+    {
+        await base.Let_any_subquery_anonymous(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `o`.`CustomerID` = `c`.`CustomerID`) AS `hasOrders`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_arithmetic(bool async)
+    {
+        await base.OrderBy_arithmetic(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+ORDER BY `e`.`EmployeeID` - `e`.`EmployeeID`
+""");
+    }
+
+    public override async Task OrderBy_condition_comparison(bool async)
+    {
+        await base.OrderBy_condition_comparison(async);
+        AssertSql(
+            """
+SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+FROM `Products` AS `p`
+ORDER BY `p`.`UnitsInStock` > 0, `p`.`ProductID`
+""");
+    }
+
+    public override async Task OrderBy_ternary_conditions(bool async)
+    {
+        await base.OrderBy_ternary_conditions(async);
+        AssertSql(
+            """
+SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+FROM `Products` AS `p`
+ORDER BY CASE
+    WHEN `p`.`UnitsInStock` > 10 THEN `p`.`ProductID` > 40
+    ELSE `p`.`ProductID` <= 40
+END, `p`.`ProductID`
+""");
+    }
+
+    public override async Task OrderBy_any(bool async)
+    {
+        await base.OrderBy_any(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND (`o`.`OrderID` > 11000)), `c`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_Joined(bool async)
+    {
+        await base.SelectMany_Joined(async);
+        AssertSql(
+            """
+SELECT `c`.`ContactName`, `o`.`OrderDate`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_Joined_DefaultIfEmpty(bool async)
+    {
+        await base.SelectMany_Joined_DefaultIfEmpty(async);
+        AssertSql(
+            """
+SELECT `c`.`ContactName`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Customers` AS `c`
+LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_Joined_Take(bool async)
+    {
+        await base.SelectMany_Joined_Take(async);
+        AssertSql(
+            """
+SELECT `c`.`ContactName`, `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM `Customers` AS `c`
+INNER JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 4
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_Joined_DefaultIfEmpty2(bool async)
+    {
+        await base.SelectMany_Joined_DefaultIfEmpty2(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Customers` AS `c`
+LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+""");
+    }
+
+    public override async Task SelectMany_Joined_DefaultIfEmpty3(bool async)
+    {
+        await base.SelectMany_Joined_DefaultIfEmpty3(async);
+        AssertSql(
+            """
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    WHERE EXISTS (
+        SELECT 1
+        FROM `Order Details` AS `o0`
+        WHERE `o`.`OrderID` = `o0`.`OrderID`)
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_many_cross_join_same_collection(bool async)
+    {
+        await base.Select_many_cross_join_same_collection(async);
+        AssertSql(
+            """
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c`
+CROSS JOIN `Customers` AS `c0`
+""");
+    }
+
+    public override async Task OrderBy_null_coalesce_operator(bool async)
+    {
+        await base.OrderBy_null_coalesce_operator(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY COALESCE(`c`.`Region`, 'ZZ'), `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_null_coalesce_operator(bool async)
+    {
+        await base.Select_null_coalesce_operator(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`CompanyName`, COALESCE(`c`.`Region`, 'ZZ') AS `Region`
+FROM `Customers` AS `c`
+ORDER BY COALESCE(`c`.`Region`, 'ZZ'), `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_conditional_operator(bool async)
+    {
+        await base.OrderBy_conditional_operator(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY CASE
+    WHEN `c`.`Region` IS NULL THEN 'ZZ'
+    ELSE `c`.`Region`
+END, `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_conditional_operator_where_condition_false(bool async)
+    {
+        await base.OrderBy_conditional_operator_where_condition_false(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`City`
+""");
+    }
+
+    public override async Task OrderBy_comparison_operator(bool async)
+    {
+        await base.OrderBy_comparison_operator(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY (`c`.`Region` = 'ASK') AND `c`.`Region` IS NOT NULL
+""");
+    }
+
+    public override async Task Projection_null_coalesce_operator(bool async)
+    {
+        await base.Projection_null_coalesce_operator(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`CompanyName`, COALESCE(`c`.`Region`, 'ZZ') AS `Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Filter_coalesce_operator(bool async)
+    {
+        await base.Filter_coalesce_operator(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE COALESCE(`c`.`ContactName`, `c`.`CompanyName`) = 'Liz Nixon'
+""");
+    }
+
+    public override async Task Take_skip_null_coalesce_operator(bool async)
+    {
+        await base.Take_skip_null_coalesce_operator(async);
+        AssertSql(
+            """
+@p='10'
+@p0='5'
+
+SELECT DISTINCT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM (
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM (
+        SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, COALESCE(`c`.`Region`, 'ZZ') AS `c`
+        FROM `Customers` AS `c`
+        ORDER BY COALESCE(`c`.`Region`, 'ZZ')
+        LIMIT @p
+    ) AS `c0`
+    ORDER BY `c0`.`c`
+    LIMIT 18446744073709551610 OFFSET @p0
+) AS `c1`
+""");
+    }
+
+    public override async Task Select_take_null_coalesce_operator(bool async)
+    {
+        await base.Select_take_null_coalesce_operator(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`CompanyName`, COALESCE(`c`.`Region`, 'ZZ') AS `Region`
+FROM `Customers` AS `c`
+ORDER BY COALESCE(`c`.`Region`, 'ZZ')
+LIMIT @p
+""");
+    }
+
+    public override async Task Select_take_skip_null_coalesce_operator(bool async)
+    {
+        await base.Select_take_skip_null_coalesce_operator(async);
+        AssertSql(
+            """
+@p='10'
+@p0='5'
+
+SELECT `c0`.`CustomerID`, `c0`.`CompanyName`, COALESCE(`c0`.`Region`, 'ZZ') AS `Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`CompanyName`, `c`.`Region`, COALESCE(`c`.`Region`, 'ZZ') AS `c`
+    FROM `Customers` AS `c`
+    ORDER BY COALESCE(`c`.`Region`, 'ZZ')
+    LIMIT @p
+) AS `c0`
+ORDER BY `c0`.`c`
+LIMIT 18446744073709551610 OFFSET @p0
+""");
+    }
+
+    public override async Task Select_take_skip_null_coalesce_operator2(bool async)
+    {
+        await base.Select_take_skip_null_coalesce_operator2(async);
+        AssertSql(
+            """
+@p='10'
+@p0='5'
+
+SELECT `c0`.`CustomerID`, `c0`.`CompanyName`, `c0`.`Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`CompanyName`, `c`.`Region`, COALESCE(`c`.`Region`, 'ZZ') AS `c`
+    FROM `Customers` AS `c`
+    ORDER BY COALESCE(`c`.`Region`, 'ZZ')
+    LIMIT @p
+) AS `c0`
+ORDER BY `c0`.`c`
+LIMIT 18446744073709551610 OFFSET @p0
+""");
+    }
+
+    public override async Task Select_take_skip_null_coalesce_operator3(bool async)
+    {
+        await base.Select_take_skip_null_coalesce_operator3(async);
+        AssertSql(
+            """
+@p='10'
+@p0='5'
+
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, COALESCE(`c`.`Region`, 'ZZ') AS `c`
+    FROM `Customers` AS `c`
+    ORDER BY COALESCE(`c`.`Region`, 'ZZ')
+    LIMIT @p
+) AS `c0`
+ORDER BY `c0`.`c`
+LIMIT 18446744073709551610 OFFSET @p0
+""");
+    }
+
+    public override async Task Select_Property_when_non_shadow(bool async)
+    {
+        await base.Select_Property_when_non_shadow(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Where_Property_when_non_shadow(bool async)
+    {
+        await base.Where_Property_when_non_shadow(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` = 10248
+""");
+    }
+
+    public override async Task Select_Property_when_shadow(bool async)
+    {
+        await base.Select_Property_when_shadow(async);
+        AssertSql(
+            """
+SELECT `e`.`Title`
+FROM `Employees` AS `e`
+""");
+    }
+
+    public override async Task Where_Property_when_shadow(bool async)
+    {
+        await base.Where_Property_when_shadow(async);
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE `e`.`Title` = 'Sales Representative'
+""");
+    }
+
+    public override async Task Select_Property_when_shadow_unconstrained_generic_method(bool async)
+    {
+        await base.Select_Property_when_shadow_unconstrained_generic_method(async);
+        AssertSql(
+            """
+SELECT `e`.`Title`
+FROM `Employees` AS `e`
+""");
+    }
+
+    public override async Task Where_Property_when_shadow_unconstrained_generic_method(bool async)
+    {
+        await base.Where_Property_when_shadow_unconstrained_generic_method(async);
+        AssertSql(
+            """
+@value='Sales Representative' (Size = 30)
+
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE `e`.`Title` = @value
+""");
+    }
+
+    public override async Task Where_Property_shadow_closure(bool async)
+    {
+        await base.Where_Property_shadow_closure(async);
+        AssertSql(
+            """
+@value='Sales Representative' (Size = 30)
+
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE `e`.`Title` = @value
+""",
+            //
+            """
+@value='Steven' (Size = 10)
+
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+WHERE `e`.`FirstName` = @value
+""");
+    }
+
+    public override async Task Selected_column_can_coalesce(bool async)
+    {
+        await base.Selected_column_can_coalesce(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY COALESCE(`c`.`Region`, 'ZZ')
+""");
+    }
+
+    public override async Task IQueryable_captured_variable()
+    {
+        await base.IQueryable_captured_variable();
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM `Customers` AS `c`
+WHERE (
+    SELECT COUNT(*)
+    FROM `Orders` AS `o`) = 2
+""");
+    }
+
+    public override async Task Select_Subquery_Single(bool async)
+    {
+        await base.Select_Subquery_Single(async);
+        AssertSql(
+            """
+@p='2'
+
+SELECT `o3`.`OrderID`, `o3`.`CustomerID`, `o3`.`EmployeeID`, `o3`.`OrderDate`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`ProductID`
+    FROM `Order Details` AS `o`
+    ORDER BY `o`.`ProductID`, `o`.`OrderID`
+    LIMIT @p
+) AS `o1`
+LEFT JOIN (
+    SELECT `o2`.`OrderID`, `o2`.`CustomerID`, `o2`.`EmployeeID`, `o2`.`OrderDate`
+    FROM (
+        SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o0`.`OrderID` ORDER BY `o0`.`OrderID`) AS `row`
+        FROM `Orders` AS `o0`
+    ) AS `o2`
+    WHERE `o2`.`row` <= 1
+) AS `o3` ON `o1`.`OrderID` = `o3`.`OrderID`
+ORDER BY `o1`.`ProductID`, `o1`.`OrderID`
+""");
+    }
+
+    public override async Task Select_Where_Subquery_Deep_Single(bool async)
+    {
+        await base.Select_Where_Subquery_Deep_Single(async);
+        AssertSql(
+            """
+@p='2'
+
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (`o`.`OrderID` = 10344) AND ((
+    SELECT (
+        SELECT `c`.`City`
+        FROM `Customers` AS `c`
+        WHERE `o0`.`CustomerID` = `c`.`CustomerID`
+        LIMIT 1)
+    FROM `Orders` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`
+    LIMIT 1) = 'Seattle')
+LIMIT @p
+""");
+    }
+
+    public override async Task Select_Where_Subquery_Deep_First(bool async)
+    {
+        await base.Select_Where_Subquery_Deep_First(async);
+        AssertSql(
+            """
+@p='2'
+
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (
+    SELECT (
+        SELECT `c`.`City`
+        FROM `Customers` AS `c`
+        WHERE `o0`.`CustomerID` = `c`.`CustomerID`
+        LIMIT 1)
+    FROM `Orders` AS `o0`
+    WHERE `o`.`OrderID` = `o0`.`OrderID`
+    LIMIT 1) = 'Seattle'
+LIMIT @p
+""");
+    }
+
+    public override async Task Select_Where_Subquery_Equality(bool async)
+    {
+        await base.Select_Where_Subquery_Equality(async);
+        AssertSql(
+            """
+@p='1'
+
+SELECT `o3`.`OrderID`, `o3`.`CustomerID`, `o3`.`EmployeeID`, `o3`.`OrderDate`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o3`
+WHERE (
+    SELECT COUNT(*)
+    FROM (
+        SELECT `o0`.`OrderID`
+        FROM `Order Details` AS `o0`
+        ORDER BY `o0`.`OrderID`
+        LIMIT 2
+    ) AS `o2`
+    WHERE ((
+        SELECT `c`.`Country`
+        FROM `Customers` AS `c`
+        WHERE `c`.`CustomerID` = `o3`.`CustomerID`
+        ORDER BY `c`.`CustomerID`
+        LIMIT 1) = (
+        SELECT `c0`.`Country`
+        FROM `Orders` AS `o1`
+        INNER JOIN `Customers` AS `c0` ON `o1`.`CustomerID` = `c0`.`CustomerID`
+        WHERE `o1`.`OrderID` = `o2`.`OrderID`
+        ORDER BY `o1`.`OrderID`, `c0`.`CustomerID`
+        LIMIT 1)) OR ((
+        SELECT `c`.`Country`
+        FROM `Customers` AS `c`
+        WHERE `c`.`CustomerID` = `o3`.`CustomerID`
+        ORDER BY `c`.`CustomerID`
+        LIMIT 1) IS NULL AND ((
+        SELECT `c0`.`Country`
+        FROM `Orders` AS `o1`
+        INNER JOIN `Customers` AS `c0` ON `o1`.`CustomerID` = `c0`.`CustomerID`
+        WHERE `o1`.`OrderID` = `o2`.`OrderID`
+        ORDER BY `o1`.`OrderID`, `c0`.`CustomerID`
+        LIMIT 1) IS NULL))) > 0
+ORDER BY `o3`.`OrderID`
+""");
+    }
+
+    public override async Task Throws_on_concurrent_query_list(bool async)
+    {
+        await base.Throws_on_concurrent_query_list(async);
+        AssertSql(
+            """
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE' AND table_schema = 'Northwind'
+""",
+            //
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Throws_on_concurrent_query_first(bool async)
+    {
+        await base.Throws_on_concurrent_query_first(async);
+        AssertSql(
+            """
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE' AND table_schema = 'Northwind'
+""",
+            //
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Environment_newline_is_funcletized(bool async)
+    {
+        await base.Environment_newline_is_funcletized(async);
+        AssertSql(
+            """
+@NewLine_contains='%
+%' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE @NewLine_contains
+""");
+    }
+
+    public override async Task Concat_string_int(bool async)
+    {
+        await base.Concat_string_int(async);
+        AssertSql(
+            """
+SELECT CONCAT(CAST(`o`.`OrderID` AS char), COALESCE(`o`.`CustomerID`, ''))
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Concat_int_string(bool async)
+    {
+        await base.Concat_int_string(async);
+        AssertSql(
+            """
+SELECT CONCAT(COALESCE(`o`.`CustomerID`, ''), CAST(`o`.`OrderID` AS char))
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Concat_parameter_string_int(bool async)
+    {
+        await base.Concat_parameter_string_int(async);
+        AssertSql(
+            """
+@parameter='-' (Size = 4000)
+
+SELECT CONCAT(@parameter, CAST(`o`.`OrderID` AS char))
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Concat_constant_string_int(bool async)
+    {
+        await base.Concat_constant_string_int(async);
+        AssertSql(
+            """
+SELECT CONCAT('-', CAST(`o`.`OrderID` AS char))
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task String_concat_with_navigation1(bool async)
+    {
+        await base.String_concat_with_navigation1(async);
+        AssertSql(
+            """
+SELECT CONCAT(CONCAT(COALESCE(`o`.`CustomerID`, ''), ' '), COALESCE(`c`.`City`, ''))
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+""");
+    }
+
+    public override async Task String_concat_with_navigation2(bool async)
+    {
+        await base.String_concat_with_navigation2(async);
+        AssertSql(
+            """
+SELECT CONCAT(CONCAT(COALESCE(`c`.`City`, ''), ' '), COALESCE(`c`.`City`, ''))
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Handle_materialization_properly_when_more_than_two_query_sources_are_involved(bool async)
+    {
+        await base.Handle_materialization_properly_when_more_than_two_query_sources_are_involved(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+CROSS JOIN `Employees` AS `e`
+ORDER BY `c`.`CustomerID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Parameter_extraction_short_circuits_1(bool async)
+    {
+        await base.Parameter_extraction_short_circuits_1(async);
+        AssertSql(
+            """
+@dateFilter_Value_Month='7'
+@dateFilter_Value_Year='1996'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE (`o`.`OrderID` < 10400) AND ((`o`.`OrderDate` IS NOT NULL AND (EXTRACT(month FROM `o`.`OrderDate`) = @dateFilter_Value_Month)) AND (EXTRACT(year FROM `o`.`OrderDate`) = @dateFilter_Value_Year))
+""",
+            //
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10400
+""");
+    }
+
+    public override async Task Parameter_extraction_short_circuits_2(bool async)
+    {
+        await base.Parameter_extraction_short_circuits_2(async);
+        AssertSql(
+            """
+@dateFilter_Value_Month='7'
+@dateFilter_Value_Year='1996'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE (`o`.`OrderID` < 10400) AND ((`o`.`OrderDate` IS NOT NULL AND (EXTRACT(month FROM `o`.`OrderDate`) = @dateFilter_Value_Month)) AND (EXTRACT(year FROM `o`.`OrderDate`) = @dateFilter_Value_Year))
+""",
+            //
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Parameter_extraction_short_circuits_3(bool async)
+    {
+        await base.Parameter_extraction_short_circuits_3(async);
+        AssertSql(
+            """
+@dateFilter_Value_Month='7'
+@dateFilter_Value_Year='1996'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE (`o`.`OrderID` < 10400) OR ((`o`.`OrderDate` IS NOT NULL AND (EXTRACT(month FROM `o`.`OrderDate`) = @dateFilter_Value_Month)) AND (EXTRACT(year FROM `o`.`OrderDate`) = @dateFilter_Value_Year))
+""",
+            //
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Parameter_extraction_can_throw_exception_from_user_code(bool async)
+    {
+        await base.Parameter_extraction_can_throw_exception_from_user_code(async);
+        AssertSql();
+    }
+
+    public override async Task Parameter_extraction_can_throw_exception_from_user_code_2(bool async)
+    {
+        await base.Parameter_extraction_can_throw_exception_from_user_code_2(async);
+        AssertSql();
+    }
+
+    public override async Task Subquery_member_pushdown_does_not_change_original_subquery_model(bool async)
+    {
+        await base.Subquery_member_pushdown_does_not_change_original_subquery_model(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `o0`.`OrderID` AS `OrderId`, (
+    SELECT `c0`.`City`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` = `o0`.`CustomerID`
+    LIMIT 1) AS `City`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+ORDER BY (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Subquery_member_pushdown_does_not_change_original_subquery_model2(bool async)
+    {
+        await base.Subquery_member_pushdown_does_not_change_original_subquery_model2(async);
+        AssertSql(
+            """
+@p='3'
+
+SELECT `o0`.`OrderID` AS `OrderId`, (
+    SELECT `c0`.`City`
+    FROM `Customers` AS `c0`
+    WHERE `c0`.`CustomerID` = `o0`.`CustomerID`
+    LIMIT 1) AS `City`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+ORDER BY (
+    SELECT `c`.`City`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Query_expression_with_to_string_and_contains(bool async)
+    {
+        await base.Query_expression_with_to_string_and_contains(async);
+        AssertSql(
+            """
+SELECT `o`.`CustomerID`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL AND (COALESCE(CAST(`o`.`EmployeeID` AS char), '') LIKE '%7%')
+""");
+    }
+
+    public override async Task Select_expression_other_to_string(bool async)
+    {
+        await base.Select_expression_other_to_string(async);
+        AssertSql(
+            """
+SELECT COALESCE(CAST(`o`.`OrderDate` AS char), '') AS `ShipName`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_long_to_string(bool async)
+    {
+        await base.Select_expression_long_to_string(async);
+        AssertSql(
+            """
+SELECT CAST(CAST(`o`.`OrderID` AS signed) AS char) AS `ShipName`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_int_to_string(bool async)
+    {
+        await base.Select_expression_int_to_string(async);
+        AssertSql(
+            """
+SELECT CAST(`o`.`OrderID` AS char) AS `ShipName`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task ToString_with_formatter_is_evaluated_on_the_client(bool async)
+    {
+        await base.ToString_with_formatter_is_evaluated_on_the_client(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""",
+            //
+            """
+SELECT `o`.`OrderID`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_date_add_year(bool async)
+    {
+        await base.Select_expression_date_add_year(async);
+        AssertSql(
+            """
+SELECT DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(1 AS signed) year) AS `OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_datetime_add_month(bool async)
+    {
+        await base.Select_expression_datetime_add_month(async);
+        AssertSql(
+            """
+SELECT DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(1 AS signed) month) AS `OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_datetime_add_hour(bool async)
+    {
+        await base.Select_expression_datetime_add_hour(async);
+        AssertSql(
+            """
+SELECT DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(1.0 AS signed) hour) AS `OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_datetime_add_minute(bool async)
+    {
+        await base.Select_expression_datetime_add_minute(async);
+        AssertSql(
+            """
+SELECT DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(1.0 AS signed) minute) AS `OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_datetime_add_second(bool async)
+    {
+        await base.Select_expression_datetime_add_second(async);
+        AssertSql(
+            """
+SELECT DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(1.0 AS signed) second) AS `OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_datetime_add_ticks(bool async)
+    {
+        await base.Select_expression_datetime_add_ticks(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_date_add_milliseconds_above_the_range(bool async)
+    {
+        await base.Select_expression_date_add_milliseconds_above_the_range(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_date_add_milliseconds_below_the_range(bool async)
+    {
+        await base.Select_expression_date_add_milliseconds_below_the_range(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Select_expression_date_add_milliseconds_large_number_divided(bool async)
+    {
+        await base.Select_expression_date_add_milliseconds_large_number_divided(async);
+        AssertSql(
+            """
+@millisecondsPerDay='86400000'
+
+SELECT DATE_ADD(DATE_ADD(`o`.`OrderDate`, INTERVAL CAST(CAST((CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed)) DIV (@millisecondsPerDay) AS double) AS signed) day), INTERVAL 1000 * CAST(CAST(CAST((EXTRACT(microsecond FROM `o`.`OrderDate`)) DIV (1000) AS signed) % @millisecondsPerDay AS double) AS signed) microsecond) AS `OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderDate` IS NOT NULL
+""");
+    }
+
+    public override async Task Add_minutes_on_constant_value(bool async)
+    {
+        await base.Add_minutes_on_constant_value(async);
+        AssertSql(
+            """
+SELECT DATE_ADD(TIMESTAMP '1900-01-01 00:00:00', INTERVAL CAST(CAST(`o`.`OrderID` % 25 AS double) AS signed) minute) AS `Test`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` < 10500
+ORDER BY `o`.`OrderID`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_without_group_join(bool async)
+    {
+        await base.DefaultIfEmpty_without_group_join(async);
+        AssertSql(
+            """
+SELECT `c0`.`CustomerID`
+FROM (
+    SELECT 1
+) AS `e`
+LEFT JOIN (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`City` = 'London'
+) AS `c0` ON TRUE
+WHERE `c0`.`CustomerID` IS NOT NULL
+""");
+    }
+
+    public override async Task DefaultIfEmpty_in_subquery(bool async)
+    {
+        await base.DefaultIfEmpty_in_subquery(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `o`.`OrderID`
+FROM `Customers` AS `c`
+LEFT JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `o`.`OrderID` IS NOT NULL
+""");
+    }
+
+    public override async Task DefaultIfEmpty_in_subquery_not_correlated(bool async)
+    {
+        await base.DefaultIfEmpty_in_subquery_not_correlated(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `s`.`OrderID`
+FROM `Customers` AS `c`
+CROSS JOIN (
+    SELECT `o0`.`OrderID`
+    FROM (
+        SELECT 1
+    ) AS `e`
+    LEFT JOIN (
+        SELECT `o`.`OrderID`
+        FROM `Orders` AS `o`
+        WHERE `o`.`OrderID` > 15000
+    ) AS `o0` ON TRUE
+) AS `s`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_in_subquery_nested(bool async)
+    {
+        await base.DefaultIfEmpty_in_subquery_nested(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `s`.`OrderID`, `o1`.`OrderDate`
+FROM `Customers` AS `c`
+CROSS JOIN (
+    SELECT `o0`.`OrderID`
+    FROM (
+        SELECT 1
+    ) AS `e`
+    LEFT JOIN (
+        SELECT `o`.`OrderID`
+        FROM `Orders` AS `o`
+        WHERE `o`.`OrderID` > 11050
+    ) AS `o0` ON TRUE
+) AS `s`
+LEFT JOIN `Orders` AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+WHERE (`c`.`City` = 'Seattle') AND (`s`.`OrderID` IS NOT NULL AND (`o1`.`OrderID` IS NOT NULL))
+ORDER BY `s`.`OrderID`, `o1`.`OrderDate`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_in_subquery_nested_filter_order_comparison(bool async)
+    {
+        await base.DefaultIfEmpty_in_subquery_nested_filter_order_comparison(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `s`.`OrderID`, `o2`.`OrderDate`
+FROM `Customers` AS `c`
+CROSS JOIN (
+    SELECT `o0`.`OrderID`
+    FROM (
+        SELECT 1
+    ) AS `e`
+    LEFT JOIN (
+        SELECT `o`.`OrderID`
+        FROM `Orders` AS `o`
+        WHERE `o`.`OrderID` > 11050
+    ) AS `o0` ON TRUE
+) AS `s`
+LEFT JOIN LATERAL (
+    SELECT `o1`.`OrderID`, `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE `o1`.`OrderID` <= (CHAR_LENGTH(`c`.`CustomerID`) + 10250)
+) AS `o2` ON TRUE
+WHERE (`c`.`City` = 'Seattle') AND (`s`.`OrderID` IS NOT NULL AND (`o2`.`OrderID` IS NOT NULL))
+ORDER BY `s`.`OrderID`, `o2`.`OrderDate`
+""");
+    }
+
+    public override async Task OrderBy_skip_take(bool async)
+    {
+        await base.OrderBy_skip_take(async);
+        AssertSql(
+            """
+@p0='8'
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task OrderBy_skip_skip_take(bool async)
+    {
+        await base.OrderBy_skip_skip_take(async);
+        AssertSql(
+            """
+@p='5'
+@p1='3'
+@p0='8'
+
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+ORDER BY `c0`.`ContactTitle`, `c0`.`ContactName`
+LIMIT @p1 OFFSET @p0
+""");
+    }
+
+    public override async Task OrderBy_skip_take_take(bool async)
+    {
+        await base.OrderBy_skip_take_take(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+LIMIT 3 OFFSET @p
+""");
+    }
+
+    public override async Task OrderBy_skip_take_take_take_take(bool async)
+    {
+        await base.OrderBy_skip_take_take_take_take(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+LIMIT 5 OFFSET @p
+""");
+    }
+
+    public override async Task OrderBy_skip_take_skip_take_skip(bool async)
+    {
+        await base.OrderBy_skip_take_skip_take_skip(async);
+        AssertSql(
+            """
+@p0='15'
+@p='5'
+@p2='8'
+@p1='2'
+
+SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM (
+    SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM (
+        SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+        LIMIT @p0 OFFSET @p
+    ) AS `c0`
+    ORDER BY `c0`.`ContactTitle`, `c0`.`ContactName`
+    LIMIT @p2 OFFSET @p1
+) AS `c1`
+ORDER BY `c1`.`ContactTitle`, `c1`.`ContactName`
+LIMIT 18446744073709551610 OFFSET @p
+""");
+    }
+
+    public override async Task OrderBy_skip_take_distinct(bool async)
+    {
+        await base.OrderBy_skip_take_distinct(async);
+        AssertSql(
+            """
+@p0='15'
+@p='5'
+
+SELECT DISTINCT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+    LIMIT @p0 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task OrderBy_coalesce_take_distinct(bool async)
+    {
+        await base.OrderBy_coalesce_take_distinct(async);
+        AssertSql(
+            """
+@p='15'
+
+SELECT DISTINCT `p0`.`ProductID`, `p0`.`Discontinued`, `p0`.`ProductName`, `p0`.`SupplierID`, `p0`.`UnitPrice`, `p0`.`UnitsInStock`
+FROM (
+    SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+    FROM `Products` AS `p`
+    ORDER BY COALESCE(`p`.`UnitPrice`, 0.0)
+    LIMIT @p
+) AS `p0`
+""");
+    }
+
+    public override async Task OrderBy_coalesce_skip_take_distinct(bool async)
+    {
+        await base.OrderBy_coalesce_skip_take_distinct(async);
+        AssertSql(
+            """
+@p0='15'
+@p='5'
+
+SELECT DISTINCT `p0`.`ProductID`, `p0`.`Discontinued`, `p0`.`ProductName`, `p0`.`SupplierID`, `p0`.`UnitPrice`, `p0`.`UnitsInStock`
+FROM (
+    SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+    FROM `Products` AS `p`
+    ORDER BY COALESCE(`p`.`UnitPrice`, 0.0)
+    LIMIT @p0 OFFSET @p
+) AS `p0`
+""");
+    }
+
+    public override async Task OrderBy_coalesce_skip_take_distinct_take(bool async)
+    {
+        await base.OrderBy_coalesce_skip_take_distinct_take(async);
+        AssertSql(
+            """
+@p0='15'
+@p='5'
+
+SELECT DISTINCT `p0`.`ProductID`, `p0`.`Discontinued`, `p0`.`ProductName`, `p0`.`SupplierID`, `p0`.`UnitPrice`, `p0`.`UnitsInStock`
+FROM (
+    SELECT `p`.`ProductID`, `p`.`Discontinued`, `p`.`ProductName`, `p`.`SupplierID`, `p`.`UnitPrice`, `p`.`UnitsInStock`
+    FROM `Products` AS `p`
+    ORDER BY COALESCE(`p`.`UnitPrice`, 0.0)
+    LIMIT @p0 OFFSET @p
+) AS `p0`
+LIMIT @p
+""");
+    }
+
+    public override async Task OrderBy_skip_take_distinct_orderby_take(bool async)
+    {
+        await base.OrderBy_skip_take_distinct_orderby_take(async);
+        AssertSql(
+            """
+@p0='15'
+@p='5'
+@p1='8'
+
+SELECT `c1`.`CustomerID`, `c1`.`Address`, `c1`.`City`, `c1`.`CompanyName`, `c1`.`ContactName`, `c1`.`ContactTitle`, `c1`.`Country`, `c1`.`Fax`, `c1`.`Phone`, `c1`.`PostalCode`, `c1`.`Region`
+FROM (
+    SELECT DISTINCT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+    FROM (
+        SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+        FROM `Customers` AS `c`
+        ORDER BY `c`.`ContactTitle`, `c`.`ContactName`
+        LIMIT @p0 OFFSET @p
+    ) AS `c0`
+) AS `c1`
+ORDER BY `c1`.`ContactTitle`
+LIMIT @p1
+""");
+    }
+
+    public override async Task No_orderby_added_for_fully_translated_manually_constructed_LOJ(bool async)
+    {
+        await base.No_orderby_added_for_fully_translated_manually_constructed_LOJ(async);
+        AssertSql(
+            """
+SELECT `e`.`City` AS `City1`, `e0`.`City` AS `City2`
+FROM `Employees` AS `e`
+LEFT JOIN `Employees` AS `e0` ON `e`.`EmployeeID` = `e0`.`ReportsTo`
+""");
+    }
+
+    public override async Task No_orderby_added_for_client_side_GroupJoin_dependent_to_principal_LOJ(bool async)
+    {
+        await base.No_orderby_added_for_client_side_GroupJoin_dependent_to_principal_LOJ(async);
+        AssertSql();
+    }
+
+    public override async Task No_orderby_added_for_client_side_GroupJoin_dependent_to_principal_LOJ_with_additional_join_condition1(bool async)
+    {
+        await base.No_orderby_added_for_client_side_GroupJoin_dependent_to_principal_LOJ_with_additional_join_condition1(async);
+        AssertSql();
+    }
+
+    public override async Task No_orderby_added_for_client_side_GroupJoin_dependent_to_principal_LOJ_with_additional_join_condition2(bool async)
+    {
+        await base.No_orderby_added_for_client_side_GroupJoin_dependent_to_principal_LOJ_with_additional_join_condition2(async);
+        AssertSql();
+    }
+
+    public override async Task Orderby_added_for_client_side_GroupJoin_principal_to_dependent_LOJ(bool async)
+    {
+        await base.Orderby_added_for_client_side_GroupJoin_principal_to_dependent_LOJ(async);
+        AssertSql();
+    }
+
+    public override async Task Contains_with_DateTime_Date(bool async)
+    {
+        await base.Contains_with_DateTime_Date(async);
+        AssertSql(
+            """
+@dates1='1996-07-04T00:00:00.0000000' (DbType = DateTime)
+@dates2='1996-07-16T00:00:00.0000000' (DbType = DateTime)
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE CONVERT(`o`.`OrderDate`, date) IN (@dates1, @dates2)
+""",
+            //
+            """
+@dates1='1996-07-04T00:00:00.0000000' (DbType = DateTime)
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE CONVERT(`o`.`OrderDate`, date) = @dates1
+""");
+    }
+
+    public override async Task Contains_with_subquery_involving_join_binds_to_correct_table(bool async)
+    {
+        await base.Contains_with_subquery_involving_join_binds_to_correct_table(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE (`o`.`OrderID` > 11000) AND `o`.`OrderID` IN (
+    SELECT `o0`.`OrderID`
+    FROM `Order Details` AS `o0`
+    INNER JOIN `Products` AS `p` ON `o0`.`ProductID` = `p`.`ProductID`
+    WHERE `p`.`ProductName` = 'Chai'
+)
+""");
+    }
+
+    public override async Task Anonymous_member_distinct_where(bool async)
+    {
+        await base.Anonymous_member_distinct_where(async);
+        AssertSql(
+            """
+SELECT DISTINCT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task Anonymous_member_distinct_orderby(bool async)
+    {
+        await base.Anonymous_member_distinct_orderby(async);
+        AssertSql(
+            """
+SELECT `c0`.`CustomerID`
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+) AS `c0`
+ORDER BY `c0`.`CustomerID`
+""");
+    }
+
+    public override async Task Anonymous_member_distinct_result(bool async)
+    {
+        await base.Anonymous_member_distinct_result(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` LIKE 'A%'
+) AS `c0`
+""");
+    }
+
+    public override async Task Anonymous_complex_distinct_where(bool async)
+    {
+        await base.Anonymous_complex_distinct_where(async);
+        AssertSql(
+            """
+SELECT DISTINCT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `A`
+FROM `Customers` AS `c`
+WHERE (CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, ''))) = 'ALFKIBerlin'
+""");
+    }
+
+    public override async Task Anonymous_complex_distinct_orderby(bool async)
+    {
+        await base.Anonymous_complex_distinct_orderby(async);
+        AssertSql(
+            """
+SELECT `c0`.`A`
+FROM (
+    SELECT DISTINCT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `A`
+    FROM `Customers` AS `c`
+) AS `c0`
+ORDER BY `c0`.`A`
+""");
+    }
+
+    public override async Task Anonymous_complex_distinct_result(bool async)
+    {
+        await base.Anonymous_complex_distinct_result(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `A`
+    FROM `Customers` AS `c`
+    WHERE CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) LIKE 'A%'
+) AS `c0`
+""");
+    }
+
+    public override async Task Anonymous_complex_orderby(bool async)
+    {
+        await base.Anonymous_complex_orderby(async);
+        AssertSql(
+            """
+SELECT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `A`
+FROM `Customers` AS `c`
+ORDER BY CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, ''))
+""");
+    }
+
+    public override async Task Anonymous_subquery_orderby(bool async)
+    {
+        await base.Anonymous_subquery_orderby(async);
+        AssertSql(
+            """
+SELECT (
+    SELECT `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE `c`.`CustomerID` = `o1`.`CustomerID`
+    ORDER BY `o1`.`OrderID` DESC
+    LIMIT 1) AS `A`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT COUNT(*)
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) > 1
+ORDER BY (
+    SELECT `o0`.`OrderDate`
+    FROM `Orders` AS `o0`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+    ORDER BY `o0`.`OrderID` DESC
+    LIMIT 1)
+""");
+    }
+
+    public override async Task DTO_member_distinct_where(bool async)
+    {
+        await base.DTO_member_distinct_where(async);
+        AssertSql(
+            """
+SELECT DISTINCT `c`.`CustomerID` AS `Property`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task DTO_member_distinct_orderby(bool async)
+    {
+        await base.DTO_member_distinct_orderby(async);
+        AssertSql(
+            """
+SELECT `c0`.`Property`
+FROM (
+    SELECT DISTINCT `c`.`CustomerID` AS `Property`
+    FROM `Customers` AS `c`
+) AS `c0`
+ORDER BY `c0`.`Property`
+""");
+    }
+
+    public override async Task DTO_member_distinct_result(bool async)
+    {
+        await base.DTO_member_distinct_result(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `c`.`CustomerID` AS `Property`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` LIKE 'A%'
+) AS `c0`
+""");
+    }
+
+    public override async Task DTO_complex_distinct_where(bool async)
+    {
+        await base.DTO_complex_distinct_where(async);
+        AssertSql(
+            """
+SELECT DISTINCT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `Property`
+FROM `Customers` AS `c`
+WHERE (CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, ''))) = 'ALFKIBerlin'
+""");
+    }
+
+    public override async Task DTO_complex_distinct_orderby(bool async)
+    {
+        await base.DTO_complex_distinct_orderby(async);
+        AssertSql(
+            """
+SELECT `c0`.`Property`
+FROM (
+    SELECT DISTINCT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `Property`
+    FROM `Customers` AS `c`
+) AS `c0`
+ORDER BY `c0`.`Property`
+""");
+    }
+
+    public override async Task DTO_complex_distinct_result(bool async)
+    {
+        await base.DTO_complex_distinct_result(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `Property`
+    FROM `Customers` AS `c`
+    WHERE CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) LIKE 'A%'
+) AS `c0`
+""");
+    }
+
+    public override async Task DTO_complex_orderby(bool async)
+    {
+        await base.DTO_complex_orderby(async);
+        AssertSql(
+            """
+SELECT CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, '')) AS `Property`
+FROM `Customers` AS `c`
+ORDER BY CONCAT(`c`.`CustomerID`, COALESCE(`c`.`City`, ''))
+""");
+    }
+
+    public override async Task DTO_subquery_orderby(bool async)
+    {
+        await base.DTO_subquery_orderby(async);
+        AssertSql(
+            """
+SELECT (
+    SELECT `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE `c`.`CustomerID` = `o1`.`CustomerID`
+    ORDER BY `o1`.`OrderID` DESC
+    LIMIT 1) AS `Property`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT COUNT(*)
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) > 1
+ORDER BY (
+    SELECT `o0`.`OrderDate`
+    FROM `Orders` AS `o0`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+    ORDER BY `o0`.`OrderID` DESC
+    LIMIT 1)
+""");
+    }
+
+    public override async Task Include_with_orderby_skip_preserves_ordering(bool async)
+    {
+        await base.Include_with_orderby_skip_preserves_ordering(async);
+        AssertSql(
+            """
+@p0='5'
+@p='40'
+
+SELECT `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` NOT IN ('VAFFE', 'DRACD')
+    ORDER BY `c`.`City`, `c`.`CustomerID`
+    LIMIT @p0 OFFSET @p
+) AS `c0`
+LEFT JOIN `Orders` AS `o` ON `c0`.`CustomerID` = `o`.`CustomerID`
+ORDER BY `c0`.`City`, `c0`.`CustomerID`
+""");
+    }
+
+    public override async Task Complex_query_with_repeated_query_model_compiles_correctly(bool async)
+    {
+        await base.Complex_query_with_repeated_query_model_compiles_correctly(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = 'ALFKI') AND EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c0`
+    WHERE EXISTS (
+        SELECT 1
+        FROM `Customers` AS `c1`))
+""");
+    }
+
+    public override async Task Complex_query_with_repeated_nested_query_model_compiles_correctly(bool async)
+    {
+        await base.Complex_query_with_repeated_nested_query_model_compiles_correctly(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = 'ALFKI') AND EXISTS (
+    SELECT 1
+    FROM `Customers` AS `c0`
+    WHERE EXISTS (
+        SELECT 1
+        FROM `Customers` AS `c1`
+        WHERE EXISTS (
+            SELECT 1
+            FROM (
+                SELECT 1
+                FROM `Customers` AS `c2`
+                ORDER BY `c2`.`CustomerID`
+                LIMIT 10
+            ) AS `c3`)))
+""");
+    }
+
+    public override async Task Int16_parameter_can_be_used_for_int_column(bool async)
+    {
+        await base.Int16_parameter_can_be_used_for_int_column(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE `o`.`OrderID` = 10300
+""");
+    }
+
+    public override async Task Subquery_is_null_translated_correctly(bool async)
+    {
+        await base.Subquery_is_null_translated_correctly(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID` DESC
+    LIMIT 1) IS NULL
+""");
+    }
+
+    public override async Task Subquery_is_not_null_translated_correctly(bool async)
+    {
+        await base.Subquery_is_not_null_translated_correctly(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID` DESC
+    LIMIT 1) IS NOT NULL
+""");
+    }
+
+    public override async Task Select_take_average(bool async)
+    {
+        await base.Select_take_average(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT AVG(CAST(`o0`.`OrderID` AS double))
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_take_count(bool async)
+    {
+        await base.Select_take_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    LIMIT @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_orderBy_take_count(bool async)
+    {
+        await base.Select_orderBy_take_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`Country`
+    LIMIT @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_take_long_count(bool async)
+    {
+        await base.Select_take_long_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    LIMIT @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_orderBy_take_long_count(bool async)
+    {
+        await base.Select_orderBy_take_long_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`Country`
+    LIMIT @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_take_max(bool async)
+    {
+        await base.Select_take_max(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT MAX(`o0`.`OrderID`)
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_take_min(bool async)
+    {
+        await base.Select_take_min(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT MIN(`o0`.`OrderID`)
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_take_sum(bool async)
+    {
+        await base.Select_take_sum(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT COALESCE(SUM(`o0`.`OrderID`), 0)
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_skip_average(bool async)
+    {
+        await base.Select_skip_average(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT AVG(CAST(`o0`.`OrderID` AS double))
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_skip_count(bool async)
+    {
+        await base.Select_skip_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_orderBy_skip_count(bool async)
+    {
+        await base.Select_orderBy_skip_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`Country`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_skip_long_count(bool async)
+    {
+        await base.Select_skip_long_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_orderBy_skip_long_count(bool async)
+    {
+        await base.Select_orderBy_skip_long_count(async);
+        AssertSql(
+            """
+@p='7'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Customers` AS `c`
+    ORDER BY `c`.`Country`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_skip_max(bool async)
+    {
+        await base.Select_skip_max(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT MAX(`o0`.`OrderID`)
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_skip_min(bool async)
+    {
+        await base.Select_skip_min(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT MIN(`o0`.`OrderID`)
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_skip_sum(bool async)
+    {
+        await base.Select_skip_sum(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT COALESCE(SUM(`o0`.`OrderID`), 0)
+FROM (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_distinct_average(bool async)
+    {
+        await base.Select_distinct_average(async);
+        AssertSql(
+            """
+SELECT AVG(CAST(`o0`.`OrderID` AS double))
+FROM (
+    SELECT DISTINCT `o`.`OrderID`
+    FROM `Orders` AS `o`
+) AS `o0`
+""");
+    }
+
+    public override async Task Select_distinct_count(bool async)
+    {
+        await base.Select_distinct_count(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_distinct_long_count(bool async)
+    {
+        await base.Select_distinct_long_count(async);
+        AssertSql(
+            """
+SELECT COUNT(*)
+FROM (
+    SELECT DISTINCT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+    FROM `Customers` AS `c`
+) AS `c0`
+""");
+    }
+
+    public override async Task Select_distinct_max(bool async)
+    {
+        await base.Select_distinct_max(async);
+        AssertSql(
+            """
+SELECT MAX(`o`.`OrderID`)
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Select_distinct_min(bool async)
+    {
+        await base.Select_distinct_min(async);
+        AssertSql(
+            """
+SELECT MIN(`o`.`OrderID`)
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Select_distinct_sum(bool async)
+    {
+        await base.Select_distinct_sum(async);
+        AssertSql(
+            """
+SELECT COALESCE(SUM(`o0`.`OrderID`), 0)
+FROM (
+    SELECT DISTINCT `o`.`OrderID`
+    FROM `Orders` AS `o`
+) AS `o0`
+""");
+    }
+
+    public override async Task Comparing_to_fixed_string_parameter(bool async)
+    {
+        await base.Comparing_to_fixed_string_parameter(async);
+        AssertSql(
+            """
+@prefix_startswith='A%' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE @prefix_startswith
+""");
+    }
+
+    public override async Task Comparing_entities_using_Equals(bool async)
+    {
+        await base.Comparing_entities_using_Equals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id1`, `c0`.`CustomerID` AS `Id2`
+FROM `Customers` AS `c`
+CROSS JOIN `Customers` AS `c0`
+WHERE (`c`.`CustomerID` LIKE 'ALFKI%') AND (`c`.`CustomerID` = `c0`.`CustomerID`)
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Comparing_different_entity_types_using_Equals(bool async)
+    {
+        await base.Comparing_different_entity_types_using_Equals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Comparing_entity_to_null_using_Equals(bool async)
+    {
+        await base.Comparing_entity_to_null_using_Equals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Comparing_navigations_using_Equals(bool async)
+    {
+        await base.Comparing_navigations_using_Equals(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID` AS `Id1`, `o0`.`OrderID` AS `Id2`
+FROM `Orders` AS `o`
+CROSS JOIN `Orders` AS `o0`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+LEFT JOIN `Customers` AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
+WHERE (`o`.`CustomerID` LIKE 'A%') AND ((`c`.`CustomerID` = `c0`.`CustomerID`) OR (`c`.`CustomerID` IS NULL AND (`c0`.`CustomerID` IS NULL)))
+ORDER BY `o`.`OrderID`, `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Comparing_navigations_using_static_Equals(bool async)
+    {
+        await base.Comparing_navigations_using_static_Equals(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID` AS `Id1`, `o0`.`OrderID` AS `Id2`
+FROM `Orders` AS `o`
+CROSS JOIN `Orders` AS `o0`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+LEFT JOIN `Customers` AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
+WHERE (`o`.`CustomerID` LIKE 'A%') AND ((`c`.`CustomerID` = `c0`.`CustomerID`) OR (`c`.`CustomerID` IS NULL AND (`c0`.`CustomerID` IS NULL)))
+ORDER BY `o`.`OrderID`, `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Comparing_non_matching_entities_using_Equals(bool async)
+    {
+        await base.Comparing_non_matching_entities_using_Equals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id1`, `o`.`OrderID` AS `Id2`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Comparing_non_matching_collection_navigations_using_Equals(bool async)
+    {
+        await base.Comparing_non_matching_collection_navigations_using_Equals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id1`, `o`.`OrderID` AS `Id2`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Comparing_collection_navigation_to_null(bool async)
+    {
+        await base.Comparing_collection_navigation_to_null(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Comparing_collection_navigation_to_null_complex(bool async)
+    {
+        await base.Comparing_collection_navigation_to_null_complex(async);
+        AssertSql(
+            """
+SELECT `o`.`ProductID`, `o`.`OrderID`
+FROM `Order Details` AS `o`
+INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
+LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
+WHERE (`o`.`OrderID` < 10250) AND `c`.`CustomerID` IS NOT NULL
+ORDER BY `o`.`OrderID`, `o`.`ProductID`
+""");
+    }
+
+    public override async Task Compare_collection_navigation_with_itself(bool async)
+    {
+        await base.Compare_collection_navigation_with_itself(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+""");
+    }
+
+    public override async Task Compare_two_collection_navigations_with_different_query_sources(bool async)
+    {
+        await base.Compare_two_collection_navigations_with_different_query_sources(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id1`, `c0`.`CustomerID` AS `Id2`
+FROM `Customers` AS `c`
+CROSS JOIN `Customers` AS `c0`
+WHERE ((`c`.`CustomerID` = 'ALFKI') AND (`c0`.`CustomerID` = 'ALFKI')) AND (`c`.`CustomerID` = `c0`.`CustomerID`)
+""");
+    }
+
+    public override async Task Compare_two_collection_navigations_using_equals(bool async)
+    {
+        await base.Compare_two_collection_navigations_using_equals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id1`, `c0`.`CustomerID` AS `Id2`
+FROM `Customers` AS `c`
+CROSS JOIN `Customers` AS `c0`
+WHERE ((`c`.`CustomerID` = 'ALFKI') AND (`c0`.`CustomerID` = 'ALFKI')) AND (`c`.`CustomerID` = `c0`.`CustomerID`)
+""");
+    }
+
+    public override async Task Compare_two_collection_navigations_with_different_property_chains(bool async)
+    {
+        await base.Compare_two_collection_navigations_with_different_property_chains(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID` AS `Id1`, `o`.`OrderID` AS `Id2`
+FROM `Customers` AS `c`
+CROSS JOIN `Orders` AS `o`
+LEFT JOIN `Customers` AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
+WHERE (`c`.`CustomerID` = 'ALFKI') AND (`c`.`CustomerID` = `c0`.`CustomerID`)
+ORDER BY `c`.`CustomerID`, `o`.`OrderID`
+""");
+    }
+
+    public override async Task OrderBy_ThenBy_same_column_different_direction(bool async)
+    {
+        await base.OrderBy_ThenBy_same_column_different_direction(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task OrderBy_OrderBy_same_column_different_direction(bool async)
+    {
+        await base.OrderBy_OrderBy_same_column_different_direction(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`CustomerID` DESC
+""");
+    }
+
+    public override async Task Complex_nested_query_properly_binds_to_grandparent_when_parent_returns_scalar_result(bool async)
+    {
+        await base.Complex_nested_query_properly_binds_to_grandparent_when_parent_returns_scalar_result(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, (
+    SELECT COUNT(*)
+    FROM `Orders` AS `o`
+    WHERE (`c`.`CustomerID` = `o`.`CustomerID`) AND ((
+        SELECT COUNT(*)
+        FROM `Orders` AS `o0`
+        WHERE `c`.`CustomerID` = `o0`.`CustomerID`) > 0)) AS `OuterOrders`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""");
+    }
+
+    public override async Task OrderBy_Dto_projection_skip_take(bool async)
+    {
+        await base.OrderBy_Dto_projection_skip_take(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT `c`.`CustomerID` AS `Id`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task Join_take_count_works(bool async)
+    {
+        await base.Join_take_count_works(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT COUNT(*)
+FROM (
+    SELECT 1
+    FROM `Orders` AS `o`
+    INNER JOIN (
+        SELECT `c`.`CustomerID`
+        FROM `Customers` AS `c`
+        WHERE `c`.`CustomerID` = 'ALFKI'
+    ) AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
+    WHERE (`o`.`OrderID` > 690) AND (`o`.`OrderID` < 710)
+    LIMIT @p
+) AS `s`
+""");
+    }
+
+    public override async Task OrderBy_empty_list_contains(bool async)
+    {
+        await base.OrderBy_empty_list_contains(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task OrderBy_empty_list_does_not_contains(bool async)
+    {
+        await base.OrderBy_empty_list_does_not_contains(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Manual_expression_tree_typed_null_equality(bool async)
+    {
+        await base.Manual_expression_tree_typed_null_equality(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+WHERE `o`.`OrderID` < 10300
+""");
+    }
+
+    public override async Task Let_subquery_with_multiple_occurrences(bool async)
+    {
+        await base.Let_subquery_with_multiple_occurrences(async);
+        AssertSql(
+            """
+SELECT (
+    SELECT COUNT(*)
+    FROM `Order Details` AS `o1`
+    WHERE (`o`.`OrderID` = `o1`.`OrderID`) AND (`o1`.`Quantity` < 10)) AS `Count`
+FROM `Orders` AS `o`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Order Details` AS `o0`
+    WHERE (`o`.`OrderID` = `o0`.`OrderID`) AND (`o0`.`Quantity` < 10))
+""");
+    }
+
+    public override async Task Let_entity_equality_to_null(bool async)
+    {
+        await base.Let_entity_equality_to_null(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, (
+    SELECT `o0`.`OrderDate`
+    FROM `Orders` AS `o0`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+    ORDER BY `o0`.`OrderDate`
+    LIMIT 1) AS `OrderDate`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` LIKE 'A%') AND EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`)
+""");
+    }
+
+    public override async Task Let_entity_equality_to_other_entity(bool async)
+    {
+        await base.Let_entity_equality_to_other_entity(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, (
+    SELECT `o0`.`OrderDate`
+    FROM `Orders` AS `o0`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+    ORDER BY `o0`.`OrderDate`
+    LIMIT 1) AS `A`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` LIKE 'A%') AND (((
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderDate`
+    LIMIT 1) <> 0) OR (
+    SELECT `o`.`OrderID`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderDate`
+    LIMIT 1) IS NULL)
+""");
+    }
+
+    public override async Task SelectMany_after_client_method(bool async)
+    {
+        await base.SelectMany_after_client_method(async);
+        AssertSql();
+    }
+
+    public override async Task Client_OrderBy_GroupBy_Group_ordering_works(bool async)
+    {
+        await base.Client_OrderBy_GroupBy_Group_ordering_works(async);
+        AssertSql();
+    }
+
+    public override async Task Collection_navigation_equal_to_null_for_subquery(bool async)
+    {
+        await base.Collection_navigation_equal_to_null_for_subquery(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`)
+""");
+    }
+
+    public override async Task Dependent_to_principal_navigation_equal_to_null_for_subquery(bool async)
+    {
+        await base.Dependent_to_principal_navigation_equal_to_null_for_subquery(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT `c0`.`CustomerID`
+    FROM `Orders` AS `o`
+    LEFT JOIN `Customers` AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID`
+    LIMIT 1) IS NULL
+""");
+    }
+
+    public override async Task Collection_navigation_equality_rewrite_for_subquery(bool async)
+    {
+        await base.Collection_navigation_equality_rewrite_for_subquery(async);
+        AssertSql();
+    }
+
+    public override async Task Inner_parameter_in_nested_lambdas_gets_preserved(bool async)
+    {
+        await base.Inner_parameter_in_nested_lambdas_gets_preserved(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (
+    SELECT COUNT(*)
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) > 0
+""");
+    }
+
+    public override async Task Convert_to_nullable_on_nullable_value_is_ignored(bool async)
+    {
+        await base.Convert_to_nullable_on_nullable_value_is_ignored(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderDate`
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Navigation_inside_interpolated_string_is_expanded(bool async)
+    {
+        await base.Navigation_inside_interpolated_string_is_expanded(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Context_based_client_method(bool async)
+    {
+        await base.Context_based_client_method(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""",
+            //
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task OrderBy_object_type_server_evals(bool async)
+    {
+        await base.OrderBy_object_type_server_evals(async);
+        AssertSql(
+            """
+@p0='20'
+@p='0'
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+ORDER BY `o`.`OrderID`, `o`.`OrderDate`, `c`.`CustomerID`, `c`.`City`
+LIMIT @p0 OFFSET @p
+""");
+    }
+
+    public override async Task AsQueryable_in_query_server_evals(bool async)
+    {
+        await base.AsQueryable_in_query_server_evals(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `o1`.`OrderDate`, `o1`.`OrderID`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o0`.`OrderDate`, `o0`.`OrderID`, `o0`.`CustomerID`
+    FROM (
+        SELECT `o`.`OrderDate`, `o`.`OrderID`, `o`.`CustomerID`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+        WHERE EXTRACT(year FROM `o`.`OrderDate`) = 1998
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+ORDER BY `c`.`CustomerID`, `o1`.`CustomerID`, `o1`.`OrderID`
+""");
+    }
+
+    public override async Task Subquery_DefaultIfEmpty_Any(bool async)
+    {
+        await base.Subquery_DefaultIfEmpty_Any(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT 1
+    ) AS `e0`
+    LEFT JOIN (
+        SELECT 1
+        FROM `Employees` AS `e`
+        WHERE `e`.`EmployeeID` = -1
+    ) AS `e1` ON TRUE)
+""");
+    }
+
+    public override async Task Projection_skip_projection(bool async)
+    {
+        await base.Projection_skip_projection(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `c`.`City`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `o0`
+LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
+ORDER BY `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Projection_take_projection(bool async)
+    {
+        await base.Projection_take_projection(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT `c`.`City`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o0`
+LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
+ORDER BY `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Projection_skip_take_projection(bool async)
+    {
+        await base.Projection_skip_take_projection(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT `c`.`City`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT @p0 OFFSET @p
+) AS `o0`
+LEFT JOIN `Customers` AS `c` ON `o0`.`CustomerID` = `c`.`CustomerID`
+ORDER BY `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Collection_projection_skip(bool async)
+    {
+        await base.Collection_projection_skip(async);
+        AssertSql(
+            """
+@p='5'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`, `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `o1`
+LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Collection_projection_take(bool async)
+    {
+        await base.Collection_projection_take(async);
+        AssertSql(
+            """
+@p='10'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`, `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT @p
+) AS `o1`
+LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Collection_projection_skip_take(bool async)
+    {
+        await base.Collection_projection_skip_take(async);
+        AssertSql(
+            """
+@p0='10'
+@p='5'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`, `o0`.`OrderID`, `o0`.`ProductID`, `o0`.`Discount`, `o0`.`Quantity`, `o0`.`UnitPrice`
+FROM (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10300
+    ORDER BY `o`.`OrderID`
+    LIMIT @p0 OFFSET @p
+) AS `o1`
+LEFT JOIN `Order Details` AS `o0` ON `o1`.`OrderID` = `o0`.`OrderID`
+ORDER BY `o1`.`OrderID`, `o0`.`OrderID`
+""");
+    }
+
+    public override async Task Anonymous_projection_skip_empty_collection_FirstOrDefault(bool async)
+    {
+        await base.Anonymous_projection_skip_empty_collection_FirstOrDefault(async);
+        AssertSql(
+            """
+@p='0'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = 'FISSA'
+    LIMIT 18446744073709551610 OFFSET @p
+) AS `c0`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c0`.`CustomerID` = `o1`.`CustomerID`
+""");
+    }
+
+    public override async Task Anonymous_projection_take_empty_collection_FirstOrDefault(bool async)
+    {
+        await base.Anonymous_projection_take_empty_collection_FirstOrDefault(async);
+        AssertSql(
+            """
+@p='1'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = 'FISSA'
+    LIMIT @p
+) AS `c0`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c0`.`CustomerID` = `o1`.`CustomerID`
+""");
+    }
+
+    public override async Task Anonymous_projection_skip_take_empty_collection_FirstOrDefault(bool async)
+    {
+        await base.Anonymous_projection_skip_take_empty_collection_FirstOrDefault(async);
+        AssertSql(
+            """
+@p0='1'
+@p='0'
+
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` = 'FISSA'
+    LIMIT @p0 OFFSET @p
+) AS `c0`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE `o0`.`row` <= 1
+) AS `o1` ON `c0`.`CustomerID` = `o1`.`CustomerID`
+""");
+    }
+
+    public override async Task Checked_context_with_arithmetic_does_not_fail(bool async)
+    {
+        await base.Checked_context_with_arithmetic_does_not_fail(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`ProductID`, `o`.`Discount`, `o`.`Quantity`, `o`.`UnitPrice`
+FROM `Order Details` AS `o`
+WHERE (((`o`.`Quantity` + 1) = 5) AND ((`o`.`Quantity` - 1) = 3)) AND ((`o`.`Quantity` * 1) = `o`.`Quantity`)
+ORDER BY `o`.`OrderID`
+""");
+    }
+
+    public override async Task Checked_context_with_case_to_same_nullable_type_does_not_fail(bool async)
+    {
+        await base.Checked_context_with_case_to_same_nullable_type_does_not_fail(async);
+        AssertSql(
+            """
+SELECT MAX(`o`.`Quantity`)
+FROM `Order Details` AS `o`
+""");
+    }
+
+    public override async Task Entity_equality_with_null_coalesce_client_side(bool async)
+    {
+        await base.Entity_equality_with_null_coalesce_client_side(async);
+        AssertSql(
+            """
+@entity_equality_a_CustomerID='ALFKI' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = @entity_equality_a_CustomerID
+""");
+    }
+
+    public override async Task Entity_equality_contains_with_list_of_null(bool async)
+    {
+        await base.Entity_equality_contains_with_list_of_null(async);
+        AssertSql(
+            """
+@entity_equality_customers_CustomerID1='ALFKI' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = @entity_equality_customers_CustomerID1
+""");
+    }
+
+    public override async Task MemberInitExpression_NewExpression_is_funcletized_even_when_bindings_are_not_evaluatable(bool async)
+    {
+        await base.MemberInitExpression_NewExpression_is_funcletized_even_when_bindings_are_not_evaluatable(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'A%'
+""");
+    }
+
+    public override async Task Funcletize_conditional_with_evaluatable_test(bool async)
+    {
+        await base.Funcletize_conditional_with_evaluatable_test(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Null_parameter_name_works(bool async)
+    {
+        await base.Null_parameter_name_works(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE FALSE
+""");
+    }
+
+    public override async Task String_include_on_incorrect_property_throws(bool async)
+    {
+        await base.String_include_on_incorrect_property_throws(async);
+        AssertSql();
+    }
+
+    public override async Task EF_Property_include_on_incorrect_property_throws(bool async)
+    {
+        await base.EF_Property_include_on_incorrect_property_throws(async);
+        AssertSql();
+    }
+
+    public override async Task Single_non_scalar_projection_after_skip_uses_join(bool async)
+    {
+        await base.Single_non_scalar_projection_after_skip_uses_join(async);
+        AssertSql(
+            """
+SELECT `o1`.`OrderID`, `o1`.`CustomerID`, `o1`.`EmployeeID`, `o1`.`OrderDate`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`
+    FROM (
+        SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`, ROW_NUMBER() OVER(PARTITION BY `o`.`CustomerID` ORDER BY `o`.`OrderDate`, `o`.`OrderID`) AS `row`
+        FROM `Orders` AS `o`
+    ) AS `o0`
+    WHERE (2 < `o0`.`row`) AND (`o0`.`row` <= 3)
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+""");
+    }
+
+    public override async Task Select_distinct_Select_with_client_bindings(bool async)
+    {
+        await base.Select_distinct_Select_with_client_bindings(async);
+        AssertSql(
+            """
+SELECT `o0`.`c`
+FROM (
+    SELECT DISTINCT EXTRACT(year FROM `o`.`OrderDate`) AS `c`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 20000
+) AS `o0`
+""");
+    }
+
+    public override async Task ToList_over_string(bool async)
+    {
+        await base.ToList_over_string(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task ToArray_over_string(bool async)
+    {
+        await base.ToArray_over_string(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task AsEnumerable_over_string(bool async)
+    {
+        await base.AsEnumerable_over_string(async);
+        AssertSql(
+            """
+SELECT `c`.`City`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Non_nullable_property_through_optional_navigation(bool async)
+    {
+        await base.Non_nullable_property_through_optional_navigation(async);
+        AssertSql(
+            """
+SELECT CHAR_LENGTH(`c`.`Region`) AS `Length`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Pending_selector_in_cardinality_reducing_method_is_applied_before_expanding_collection_navigation_member(bool async)
+    {
+        await base.Pending_selector_in_cardinality_reducing_method_is_applied_before_expanding_collection_navigation_member(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE ((
+        SELECT `c0`.`CustomerID`
+        FROM `Orders` AS `o0`
+        LEFT JOIN `Customers` AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
+        WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+        ORDER BY `o0`.`OrderDate`
+        LIMIT 1) IS NOT NULL AND (((
+        SELECT `c1`.`CustomerID`
+        FROM `Orders` AS `o1`
+        LEFT JOIN `Customers` AS `c1` ON `o1`.`CustomerID` = `c1`.`CustomerID`
+        WHERE `c`.`CustomerID` = `o1`.`CustomerID`
+        ORDER BY `o1`.`OrderDate`
+        LIMIT 1) = `o`.`CustomerID`) OR ((
+        SELECT `c1`.`CustomerID`
+        FROM `Orders` AS `o1`
+        LEFT JOIN `Customers` AS `c1` ON `o1`.`CustomerID` = `c1`.`CustomerID`
+        WHERE `c`.`CustomerID` = `o1`.`CustomerID`
+        ORDER BY `o1`.`OrderDate`
+        LIMIT 1) IS NULL AND (`o`.`CustomerID` IS NULL)))) AND (`o`.`OrderID` < 11000)) AS `Complex`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Distinct_followed_by_ordering_on_condition(bool async)
+    {
+        await base.Distinct_followed_by_ordering_on_condition(async);
+        AssertSql(
+            """
+@searchTerm='c' (Size = 4000)
+@p='5'
+
+SELECT `c0`.`City`
+FROM (
+    SELECT DISTINCT `c`.`City`
+    FROM `Customers` AS `c`
+    WHERE `c`.`CustomerID` NOT IN ('VAFFE', 'DRACD')
+) AS `c0`
+ORDER BY LOCATE(@searchTerm, `c0`.`City`) - 1, `c0`.`City`
+LIMIT @p
+""");
+    }
+
+    public override async Task Entity_equality_on_subquery_with_null_check(bool async)
+    {
+        await base.Entity_equality_on_subquery_with_null_check(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`) OR NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o0`
+    WHERE `c`.`CustomerID` = `o0`.`CustomerID`), (
+    SELECT `o1`.`OrderDate`
+    FROM `Orders` AS `o1`
+    WHERE `c`.`CustomerID` = `o1`.`CustomerID`
+    ORDER BY `o1`.`OrderID`
+    LIMIT 1)
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task DefaultIfEmpty_over_empty_collection_followed_by_projecting_constant(bool async)
+    {
+        await base.DefaultIfEmpty_over_empty_collection_followed_by_projecting_constant(async);
+        AssertSql(
+            """
+SELECT '520'
+FROM (
+    SELECT 1
+) AS `e`
+LEFT JOIN (
+    SELECT 1
+    FROM `Customers` AS `c`
+    WHERE FALSE
+) AS `c0` ON TRUE
+LIMIT 1
+""");
+    }
+
+    public override async Task FirstOrDefault_with_predicate_nested(bool async)
+    {
+        await base.FirstOrDefault_with_predicate_nested(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, (
+    SELECT `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    LIMIT 1) AS `OrderDate`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task First_on_collection_in_projection(bool async)
+    {
+        await base.First_on_collection_in_projection(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM `Orders` AS `o`
+        WHERE `c`.`CustomerID` = `o`.`CustomerID`) THEN (
+        SELECT `o0`.`OrderDate`
+        FROM `Orders` AS `o0`
+        WHERE `c`.`CustomerID` = `o0`.`CustomerID`
+        LIMIT 1)
+END AS `OrderDate`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task SkipWhile_throws_meaningful_exception(bool async)
+    {
+        await base.SkipWhile_throws_meaningful_exception(async);
+        AssertSql();
+    }
+
+    public override async Task Skip_0_Take_0_works_when_parameter(bool async)
+    {
+        await base.Skip_0_Take_0_works_when_parameter(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE FALSE
+""",
+            //
+            """
+@p='1'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+ORDER BY `c`.`CustomerID`
+LIMIT @p OFFSET @p
+""");
+    }
+
+    public override async Task Skip_0_Take_0_works_when_constant(bool async)
+    {
+        await base.Skip_0_Take_0_works_when_constant(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE FALSE)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Skip_1_Take_0_works_when_constant(bool async)
+    {
+        await base.Skip_1_Take_0_works_when_constant(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID`
+    LIMIT 0 OFFSET 1)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Take_0_works_when_constant(bool async)
+    {
+        await base.Take_0_works_when_constant(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID`
+    LIMIT 0)
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` LIKE 'F%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task ToListAsync_can_be_canceled()
+    {
+        await base.ToListAsync_can_be_canceled();
+        AssertSql(
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""",
+            //
+            """
+SELECT `e`.`EmployeeID`, `e`.`City`, `e`.`Country`, `e`.`FirstName`, `e`.`ReportsTo`, `e`.`Title`
+FROM `Employees` AS `e`
+""");
+    }
+
+    public override async Task ToListAsync_with_canceled_token()
+    {
+        await base.ToListAsync_with_canceled_token();
+        AssertSql();
+    }
+
+    public override async Task Mixed_sync_async_query()
+    {
+        await base.Mixed_sync_async_query();
+        AssertSql();
+    }
+
+    public override async Task Mixed_sync_async_in_query_cache()
+    {
+        await base.Mixed_sync_async_in_query_cache();
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""",
+            //
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Load_should_track_results(bool async)
+    {
+        await base.Load_should_track_results(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+""");
+    }
+
+    public override async Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(bool async)
+    {
+        await base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns(async);
+
+        if (AppConfig.ServerVersion.Supports.OuterApply)
+        {
+            AssertSql(
+                """
+SELECT `c`.`CustomerID`, `o0`.`First`, `o0`.`Second`
+FROM `Customers` AS `c`
+LEFT JOIN LATERAL (
+    SELECT DISTINCT `o`.`OrderID` AS `First`, `o`.`OrderDate` AS `Second`
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+) AS `o0` ON TRUE
+ORDER BY `c`.`CustomerID`
+""");
+        }
+        else
+        {
+            AssertSql();
+        }
+    }
+
+    public override async Task Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(bool async)
+    {
+        await base.Correlated_collection_with_distinct_without_default_identifiers_projecting_columns_with_navigation(async);
+
+        if (AppConfig.ServerVersion.Supports.OuterApply)
+        {
+            AssertSql(
+                """
+SELECT `c`.`CustomerID`, `s`.`First`, `s`.`Second`, `s`.`Third`
+FROM `Customers` AS `c`
+LEFT JOIN LATERAL (
+    SELECT DISTINCT `o`.`OrderID` AS `First`, `o`.`OrderDate` AS `Second`, `c0`.`City` AS `Third`
+    FROM `Orders` AS `o`
+    LEFT JOIN `Customers` AS `c0` ON `o`.`CustomerID` = `c0`.`CustomerID`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+) AS `s` ON TRUE
+ORDER BY `c`.`CustomerID`, `s`.`First`, `s`.`Second`
+""");
+        }
+        else
+        {
+            AssertSql();
+        }
+    }
+
+    public override async Task Select_nested_collection_with_distinct(bool async)
+    {
+        await base.Select_nested_collection_with_distinct(async);
+        AssertSql(
+            """
+SELECT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`), `c`.`CustomerID`, `o1`.`CustomerID`
+FROM `Customers` AS `c`
+LEFT JOIN (
+    SELECT DISTINCT `o0`.`CustomerID`
+    FROM `Orders` AS `o0`
+) AS `o1` ON `c`.`CustomerID` = `o1`.`CustomerID`
+WHERE `c`.`CustomerID` LIKE 'A%'
+ORDER BY `c`.`CustomerID`
+""");
+    }
+
+    public override async Task Collection_projection_after_DefaultIfEmpty(bool async)
+    {
+        await base.Collection_projection_after_DefaultIfEmpty(async);
+        AssertSql(
+            """
+SELECT `c0`.`CustomerID`, `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM (
+    SELECT 1
+) AS `e`
+LEFT JOIN (
+    SELECT `c`.`CustomerID`
+    FROM `Customers` AS `c`
+    WHERE `c`.`City` = 'Seattle'
+) AS `c0` ON TRUE
+LEFT JOIN `Orders` AS `o` ON `c0`.`CustomerID` = `o`.`CustomerID`
+ORDER BY `c0`.`CustomerID`
+""");
+    }
+
+    public override async Task Collection_navigation_equal_to_null_for_subquery_using_ElementAtOrDefault_constant_zero(bool async)
+    {
+        await base.Collection_navigation_equal_to_null_for_subquery_using_ElementAtOrDefault_constant_zero(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`)
+""");
+    }
+
+    public override async Task Collection_navigation_equal_to_null_for_subquery_using_ElementAtOrDefault_constant_one(bool async)
+    {
+        await base.Collection_navigation_equal_to_null_for_subquery_using_ElementAtOrDefault_constant_one(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET 1)
+""");
+    }
+
+    public override async Task Collection_navigation_equal_to_null_for_subquery_using_ElementAtOrDefault_parameter(bool async)
+    {
+        await base.Collection_navigation_equal_to_null_for_subquery_using_ElementAtOrDefault_parameter(async);
+        AssertSql(
+            """
+@prm='2'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = `o`.`CustomerID`
+    ORDER BY `o`.`OrderID`
+    LIMIT 18446744073709551610 OFFSET @prm)
+""");
+    }
+
+    public override async Task Parameter_collection_Contains_with_projection_and_ordering(bool async)
+    {
+        await base.Parameter_collection_Contains_with_projection_and_ordering(async);
+        AssertSql(
+            """
+@ids1='10248'
+@ids2='10249'
+
+SELECT `o`.`Quantity` AS `Key`, (
+    SELECT MAX(`o1`.`OrderDate`)
+    FROM `Order Details` AS `o0`
+    INNER JOIN `Orders` AS `o1` ON `o0`.`OrderID` = `o1`.`OrderID`
+    WHERE `o0`.`OrderID` IN (@ids1, @ids2) AND (`o`.`Quantity` = `o0`.`Quantity`)) AS `MaxTimestamp`
+FROM `Order Details` AS `o`
+WHERE `o`.`OrderID` IN (@ids1, @ids2)
+GROUP BY `o`.`Quantity`
+ORDER BY (
+    SELECT MAX(`o1`.`OrderDate`)
+    FROM `Order Details` AS `o0`
+    INNER JOIN `Orders` AS `o1` ON `o0`.`OrderID` = `o1`.`OrderID`
+    WHERE `o0`.`OrderID` IN (@ids1, @ids2) AND (`o`.`Quantity` = `o0`.`Quantity`))
+""");
+    }
+
+    public override async Task Contains_over_concatenated_columns_with_different_sizes(bool async)
+    {
+        await base.Contains_over_concatenated_columns_with_different_sizes(async);
+        AssertSql(
+            """
+@data1='ALFKIAlfreds Futterkiste' (Size = 45)
+@data2='ANATRAna Trujillo Emparedados y helados' (Size = 45)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE CONCAT(`c`.`CustomerID`, `c`.`CompanyName`) IN (@data1, @data2)
+""");
+    }
+
+    public override async Task Contains_over_concatenated_column_and_constant(bool async)
+    {
+        await base.Contains_over_concatenated_column_and_constant(async);
+        AssertSql(
+            """
+@data1='ALFKISomeConstant' (Size = 4000)
+@data2='ANATRSomeConstant' (Size = 4000)
+@data3='ALFKIX' (Size = 4000)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE CONCAT(`c`.`CustomerID`, 'SomeConstant') IN (@data1, @data2, @data3)
+""");
+    }
+
+    public override async Task Contains_over_concatenated_column_and_parameter(bool async)
+    {
+        await base.Contains_over_concatenated_column_and_parameter(async);
+        AssertSql(
+            """
+@someVariable='SomeVariable' (Size = 4000)
+@data1='ALFKISomeVariable' (Size = 4000)
+@data2='ANATRSomeVariable' (Size = 4000)
+@data3='ALFKIX' (Size = 4000)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE CONCAT(`c`.`CustomerID`, @someVariable) IN (@data1, @data2, @data3)
+""");
+    }
+
+    public override async Task Contains_over_concatenated_parameter_and_constant(bool async)
+    {
+        await base.Contains_over_concatenated_parameter_and_constant(async);
+        AssertSql(
+            """
+@Contains='True'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE @Contains
+""");
+    }
+
+    public override async Task Contains_over_concatenated_columns_both_fixed_length(bool async)
+    {
+        await base.Contains_over_concatenated_columns_both_fixed_length(async);
+        AssertSql(
+            """
+@data1='ALFKIALFKI' (Size = 10) (DbType = StringFixedLength)
+@data2='ALFKI' (Size = 10) (DbType = StringFixedLength)
+@data3='ANATRAna Trujillo Emparedados y helados' (Size = -1) (DbType = StringFixedLength)
+@data4='ANATRANATR' (Size = 10) (DbType = StringFixedLength)
+
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+WHERE CONCAT(COALESCE(`o`.`CustomerID`, ''), COALESCE(`c`.`CustomerID`, '')) IN (@data1, @data2, @data3, @data4)
+""");
+    }
+
+    public override async Task Compiler_generated_local_closure_produces_valid_parameter_name(bool async)
+    {
+        await base.Compiler_generated_local_closure_produces_valid_parameter_name(async);
+        AssertSql(
+            """
+@customerId='ALFKI' (Size = 5) (DbType = StringFixedLength)
+@details_City='Berlin' (Size = 15)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE (`c`.`CustomerID` = @customerId) AND (`c`.`City` = @details_City)
+""");
+    }
+
+    public override async Task Static_member_access_gets_parameterized_within_larger_evaluatable(bool async)
+    {
+        await base.Static_member_access_gets_parameterized_within_larger_evaluatable(async);
+        AssertSql(
+            """
+@p='ALFKI' (Size = 5) (DbType = StringFixedLength)
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE `c`.`CustomerID` = @p
+""");
+    }
+
+    public override async Task Where_nanosecond_and_microsecond_component(bool async)
+    {
+        await base.Where_nanosecond_and_microsecond_component(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+WHERE FALSE
+""");
+    }
+
+    public override async Task Ternary_Not_Null_Contains(bool async)
+    {
+        await base.Ternary_Not_Null_Contains(async);
+        AssertSql(
+            """
+SELECT CONCAT(CAST(`o`.`OrderID` AS char), '')
+FROM `Orders` AS `o`
+WHERE CONCAT(CAST(`o`.`OrderID` AS char), '') LIKE '%1%'
+ORDER BY `o`.`OrderID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Ternary_Not_Null_endsWith_Non_Numeric_First_Part(bool async)
+    {
+        await base.Ternary_Not_Null_endsWith_Non_Numeric_First_Part(async);
+        AssertSql(
+            """
+SELECT CONCAT(CONCAT('', CAST(`o`.`OrderID` AS char)), '')
+FROM `Orders` AS `o`
+WHERE CONCAT(CONCAT('', CAST(`o`.`OrderID` AS char)), '') LIKE '%1'
+ORDER BY `o`.`OrderID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Ternary_Null_Equals_Non_Numeric_First_Part(bool async)
+    {
+        await base.Ternary_Null_Equals_Non_Numeric_First_Part(async);
+        AssertSql(
+            """
+SELECT CONCAT(CONCAT('', CAST(`o`.`OrderID` AS char)), '')
+FROM `Orders` AS `o`
+WHERE (CONCAT(CONCAT('', CAST(`o`.`OrderID` AS char)), '')) = '1'
+ORDER BY `o`.`OrderID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Ternary_Null_StartsWith(bool async)
+    {
+        await base.Ternary_Null_StartsWith(async);
+        AssertSql(
+            """
+SELECT CONCAT(CAST(`o`.`OrderID` AS char), '')
+FROM `Orders` AS `o`
+WHERE CONCAT(CAST(`o`.`OrderID` AS char), '') LIKE '1%'
+ORDER BY `o`.`OrderID`
+LIMIT 1
+""");
+    }
+
+    public override async Task Column_access_inside_subquery_predicate(bool async)
+    {
+        await base.Column_access_inside_subquery_predicate(async);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Customers` AS `c`
+WHERE EXISTS (
+    SELECT 1
+    FROM `Orders` AS `o`
+    WHERE `c`.`CustomerID` = 'ALFKI')
+""");
+    }
+
+    public override async Task Cast_to_object_over_parameter_directly_in_lambda(bool async)
+    {
+        await base.Cast_to_object_over_parameter_directly_in_lambda(async);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override async Task Late_subquery_pushdown(bool async)
+    {
+        await base.Late_subquery_pushdown(async);
+        AssertSql(
+            """
+SELECT `o`.`CustomerID`
+FROM `Orders` AS `o`
+WHERE EXISTS (
+    SELECT 1
+    FROM (
+        SELECT `o0`.`CustomerID`
+        FROM `Orders` AS `o0`
+        ORDER BY `o0`.`CustomerID`
+        LIMIT 100
+    ) AS `o1`
+    WHERE (`o1`.`CustomerID` = `o`.`CustomerID`) OR (`o1`.`CustomerID` IS NULL AND (`o`.`CustomerID` IS NULL)))
+""");
+    }
+
+    public override void Query_composition_against_ienumerable_set()
+    {
+        base.Query_composition_against_ienumerable_set();
+        AssertSql(
+            """
+SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+FROM `Orders` AS `o`
+""");
+    }
+
+    public override void Can_cast_CreateQuery_result_to_IQueryable_T_bug_1730()
+    {
+        base.Can_cast_CreateQuery_result_to_IQueryable_T_bug_1730();
+        AssertSql();
+    }
+
+    public override async Task Perform_identity_resolution_reuses_same_instances(bool async, bool useAsTracking)
+    {
+        await base.Perform_identity_resolution_reuses_same_instances(async, useAsTracking);
+        AssertSql(
+            """
+SELECT `o`.`OrderID`
+FROM `Customers` AS `c`
+INNER JOIN `Orders` AS `o` ON `c`.`CustomerID` = `o`.`CustomerID`
+WHERE `c`.`CustomerID` = 'ALFKI'
+""",
+            //
+            """
+@orderIds1='10643'
+@orderIds2='10692'
+@orderIds3='10702'
+@orderIds4='10835'
+@orderIds5='10952'
+@orderIds6='11011'
+@orderIds7='11011'
+@orderIds8='11011'
+@orderIds9='11011'
+@orderIds10='11011'
+
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`
+FROM `Orders` AS `o`
+LEFT JOIN `Customers` AS `c` ON `o`.`CustomerID` = `c`.`CustomerID`
+WHERE `o`.`OrderID` IN (@orderIds1, @orderIds2, @orderIds3, @orderIds4, @orderIds5, @orderIds6, @orderIds7, @orderIds8, @orderIds9, @orderIds10)
+""");
+    }
+
+    public override async Task Perform_identity_resolution_reuses_same_instances_across_joins(bool async, bool useAsTracking)
+    {
+        await base.Perform_identity_resolution_reuses_same_instances_across_joins(async, useAsTracking);
+        AssertSql(
+            """
+SELECT `c`.`CustomerID`, `c`.`Address`, `c`.`City`, `c`.`CompanyName`, `c`.`ContactName`, `c`.`ContactTitle`, `c`.`Country`, `c`.`Fax`, `c`.`Phone`, `c`.`PostalCode`, `c`.`Region`, `o0`.`OrderID`, `o0`.`CustomerID`, `o0`.`EmployeeID`, `o0`.`OrderDate`, `c0`.`CustomerID`, `c0`.`Address`, `c0`.`City`, `c0`.`CompanyName`, `c0`.`ContactName`, `c0`.`ContactTitle`, `c0`.`Country`, `c0`.`Fax`, `c0`.`Phone`, `c0`.`PostalCode`, `c0`.`Region`
+FROM `Customers` AS `c`
+INNER JOIN (
+    SELECT `o`.`OrderID`, `o`.`CustomerID`, `o`.`EmployeeID`, `o`.`OrderDate`
+    FROM `Orders` AS `o`
+    WHERE `o`.`OrderID` < 10500
+) AS `o0` ON `c`.`CustomerID` = `o0`.`CustomerID`
+LEFT JOIN `Customers` AS `c0` ON `o0`.`CustomerID` = `c0`.`CustomerID`
+WHERE `c`.`CustomerID` LIKE 'A%'
+""");
+    }
+
+        [ConditionalFact]
+        public virtual void Check_all_tests_overridden()
+            => MySqlTestHelpers.AssertAllMethodsOverridden(GetType());
 
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);

@@ -507,7 +507,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             //     jsonScalarExpression.TypeMapping is not StringTypeMapping &&
             //     jsonPathNeedsConcat)
             // {
-                castStoreType = GetCastStoreType(jsonScalarExpression.TypeMapping);
+            castStoreType = GetCastStoreType(jsonScalarExpression.TypeMapping);
             // }
 
             if (castStoreType is not null)

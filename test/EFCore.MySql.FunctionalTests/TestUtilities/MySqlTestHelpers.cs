@@ -140,10 +140,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
         /// </summary>
         public static void AssertAllMethodsOverridden(Type testClass, bool withAssertSqlCall = true)
         {
+            // Collect method names declared directly on the test class (already overridden)
+            var overriddenMethodNames = testClass
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Select(m => m.Name)
+                .ToHashSet();
+
             var methods = testClass
                 .GetRuntimeMethods()
                 .Where(
                     m => m.DeclaringType != testClass
+                         && m.IsVirtual
+                         && !m.IsFinal
+                         && !overriddenMethodNames.Contains(m.Name)
                          && (Attribute.IsDefined(m, typeof(ConditionalFactAttribute))
                              || Attribute.IsDefined(m, typeof(ConditionalTheoryAttribute))))
                 .ToList();
@@ -152,39 +161,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.FunctionalTests.TestUtilities
 
             foreach (var method in methods)
             {
-                if (method.ReturnType == typeof(Task))
-                {
-                    var parameters = method.GetParameters();
-                    var generateAsyncParameter = parameters.Length == 1 &&
-                                                 parameters[0].ParameterType == typeof(bool);
-                    methodCalls.Append(
-                        @$"public override async Task {method.Name}({(generateAsyncParameter ? "bool async" : null)})
-{{
-    await base.{method.Name}({(generateAsyncParameter ? "async" : null)});{(withAssertSqlCall ?
-"""
+                var parameters = method.GetParameters();
+                // Format parameter declarations and call arguments using reflection
+                var paramDecls = string.Join(", ", parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
+                var paramArgs = string.Join(", ", parameters.Select(p => p.Name));
 
+                var isTask = method.ReturnType == typeof(Task);
+                var returnKeyword = "Task";
+                var modifier = isTask ? "async" : string.Empty;
+                var callPrefix = isTask ? "await " : string.Empty;
+                var assertSql = withAssertSqlCall ? "\n\n\n    AssertSql();" : string.Empty;
 
-    AssertSql();
-""" : null)}
-}}
-
-");
-                }
-                else
-                {
-                    methodCalls.Append(
-                        @$"public override void {method.Name}()
-{{
-    base.{method.Name}();{(withAssertSqlCall ?
-"""
-
-
-    AssertSql();
-""" : null)}
-}}
-
-");
-                }
+                methodCalls.Append(
+                    $"public override {modifier} {returnKeyword} {method.Name}({paramDecls})\n{{\n    {callPrefix}base.{method.Name}({paramArgs});{assertSql}\n}}\n\n");
             }
 
             Assert.False(

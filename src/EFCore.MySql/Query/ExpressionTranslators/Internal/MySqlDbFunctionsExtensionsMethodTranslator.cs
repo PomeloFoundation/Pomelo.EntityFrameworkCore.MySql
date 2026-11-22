@@ -109,22 +109,22 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
         private static readonly MethodInfo _isMatchMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.IsMatch),
-                new[] {typeof(DbFunctions), typeof(string), typeof(string), typeof(MySqlMatchSearchMode)});
+                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(MySqlMatchSearchMode) });
 
         private static readonly MethodInfo _isMatchWithMultiplePropertiesMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.IsMatch),
-                new[] {typeof(DbFunctions), typeof(string[]), typeof(string), typeof(MySqlMatchSearchMode)});
+                new[] { typeof(DbFunctions), typeof(string[]), typeof(string), typeof(MySqlMatchSearchMode) });
 
         private static readonly MethodInfo _matchMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.Match),
-                new[] {typeof(DbFunctions), typeof(string), typeof(string), typeof(MySqlMatchSearchMode)});
+                new[] { typeof(DbFunctions), typeof(string), typeof(string), typeof(MySqlMatchSearchMode) });
 
         private static readonly MethodInfo _matchWithMultiplePropertiesMethodInfo
             = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(
                 nameof(MySqlDbFunctionsExtensions.Match),
-                new[] {typeof(DbFunctions), typeof(string[]), typeof(string), typeof(MySqlMatchSearchMode)});
+                new[] { typeof(DbFunctions), typeof(string[]), typeof(string), typeof(MySqlMatchSearchMode) });
 
         private static readonly Type[] _supportedHexTypes = {
             typeof(string),
@@ -160,7 +160,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 .SelectMany(method => _supportedHexTypes.Select(type => method.MakeGenericMethod(type)))
                 .ToArray();
 
-        private static readonly MethodInfo _unhexMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Unhex), new[] {typeof(DbFunctions), typeof(string)});
+        private static readonly MethodInfo _unhexMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Unhex), new[] { typeof(DbFunctions), typeof(string) });
 
         private static readonly MethodInfo _degreesDoubleMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Degrees), new[] { typeof(DbFunctions), typeof(double) });
         private static readonly MethodInfo _degreesFloatMethodInfo = typeof(MySqlDbFunctionsExtensions).GetRuntimeMethod(nameof(MySqlDbFunctionsExtensions.Degrees), new[] { typeof(DbFunctions), typeof(float) });
@@ -279,7 +279,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 return _sqlExpressionFactory.NullableFunction(
                     "HEX",
-                    new[] {arguments[1]},
+                    new[] { arguments[1] },
                     typeof(string));
             }
 
@@ -287,7 +287,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
             {
                 return _sqlExpressionFactory.NullableFunction(
                     "UNHEX",
-                    new[] {arguments[1]},
+                    new[] { arguments[1] },
                     typeof(string),
                     false);
             }

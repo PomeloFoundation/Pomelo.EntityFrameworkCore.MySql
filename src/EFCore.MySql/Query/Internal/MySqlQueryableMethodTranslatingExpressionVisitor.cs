@@ -2,6 +2,8 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -59,16 +61,16 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
     protected override bool IsNaturallyOrdered(SelectExpression selectExpression)
     {
         return selectExpression is
-               {
-                   Tables: [var mainTable, ..],
-                   Orderings:
+        {
+            Tables: [var mainTable, ..],
+            Orderings:
                    [
-                       {
-                           Expression: ColumnExpression { Name: "key", TableAlias: var orderingTable } orderingColumn,
-                           IsAscending: true
-                       }
+                {
+                    Expression: ColumnExpression { Name: "key", TableAlias: var orderingTable } orderingColumn,
+                    IsAscending: true
+                }
                    ]
-               }
+        }
                && orderingTable == mainTable.Alias
                && IsJsonEachKeyColumn(selectExpression, orderingColumn);
 
@@ -80,39 +82,17 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                        && IsJsonEachKeyColumn(subquery, projectedColumn)));
     }
 
-    protected override bool IsValidSelectExpressionForExecuteDelete(
-        SelectExpression selectExpression,
-        StructuralTypeShaperExpression shaper,
-        [NotNullWhen(true)] out TableExpression tableExpression)
-    {
-        if (selectExpression.Offset == null
-            && selectExpression.GroupBy.Count == 0
-            && selectExpression.Having == null
-            && (selectExpression.Tables.Count == 1 || selectExpression.Orderings.Count == 0))
+    protected override bool IsValidSelectExpressionForExecuteDelete(SelectExpression selectExpression)
+        => selectExpression is
         {
-            TableExpressionBase table;
-            if (selectExpression.Tables.Count == 1)
-            {
-                table = selectExpression.Tables[0];
-            }
-            else
-            {
-                var projectionBindingExpression = (ProjectionBindingExpression)shaper.ValueBufferExpression;
-                var entityProjectionExpression = (StructuralTypeProjectionExpression)selectExpression.GetProjection(projectionBindingExpression);
-                var column = entityProjectionExpression.BindProperty(shaper.StructuralType.GetProperties().First());
-                table = selectExpression.GetTable(column).UnwrapJoin();
-            }
-
-            if (table is TableExpression te)
-            {
-                tableExpression = te;
-                return true;
-            }
-        }
-
-        tableExpression = null;
-        return false;
-    }
+            Orderings: [],
+            Offset: null,
+            Limit: null,
+            GroupBy: [],
+            Having: null
+        } &&
+           selectExpression.Tables[0] is TableExpression &&
+           selectExpression.Tables.Skip(1).All(t => t is InnerJoinExpression);
 
     protected override bool IsValidSelectExpressionForExecuteUpdate(
         SelectExpression selectExpression,
@@ -194,9 +174,9 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
                 Tables:
                 [
                     MySqlJsonTableExpression
-                    {
-                        Name: "JSON_TABLE", Schema: null, IsBuiltIn: true, JsonExpression: var jsonArrayColumn
-                    } jsonEachExpression
+                {
+                    Name: "JSON_TABLE", Schema: null, IsBuiltIn: true, JsonExpression: var jsonArrayColumn
+                } jsonEachExpression
                 ],
                 GroupBy: [],
                 Having: null,
@@ -244,10 +224,133 @@ public class MySqlQueryableMethodTranslatingExpressionVisitor : RelationalQuerya
         return base.TranslateElementAtOrDefault(source, index, returnDefault);
     }
 
-    // TODO: Implement for EF Core 7 JSON support.
     protected override ShapedQueryExpression TransformJsonQueryToTable(JsonQueryExpression jsonQueryExpression)
     {
-        return base.TransformJsonQueryToTable(jsonQueryExpression);
+        // Calculate the table alias based on the last named path segment
+        // (or fall back to the JSON column name if there are none).
+        var lastNamedPathSegmentPropertyName = jsonQueryExpression.Path.Count > 0
+            ? jsonQueryExpression.Path.LastOrDefault(ps => ps.PropertyName is not null).PropertyName
+            : null;
+        var tableAlias = _sqlAliasManager.GenerateTableAlias(
+            lastNamedPathSegmentPropertyName ?? jsonQueryExpression.JsonColumn.Name);
+
+        var jsonTypeMapping = jsonQueryExpression.JsonColumn.TypeMapping!;
+
+        // Build the COLUMNS clause from the entity's properties and navigations.
+        var columnInfos = new List<MySqlJsonTableExpression.ColumnInfo>();
+
+        // Add scalar properties that exist in the JSON document.
+        foreach (var property in jsonQueryExpression.StructuralType.GetPropertiesInHierarchy())
+        {
+            if (property.GetJsonPropertyName() is string jsonPropertyName)
+            {
+                columnInfos.Add(
+                    new MySqlJsonTableExpression.ColumnInfo(
+                        Name: jsonPropertyName,
+                        TypeMapping: property.GetRelationalTypeMapping(),
+                        Path: [new PathSegment(jsonPropertyName)],
+                        AsJson: false));
+            }
+        }
+
+        // Add navigations to owned/complex types mapped to JSON.
+        switch (jsonQueryExpression.StructuralType)
+        {
+            case IEntityType entityType:
+                foreach (var navigation in entityType.GetNavigationsInHierarchy()
+                    .Where(n => n.ForeignKey.IsOwnership
+                        && n.TargetEntityType.IsMappedToJson()
+                        && n.ForeignKey.PrincipalToDependent == n))
+                {
+                    var jsonNavigationName = navigation.TargetEntityType.GetJsonPropertyName();
+                    Check.DebugAssert(jsonNavigationName is not null, $"No JSON property name for navigation {navigation.Name}");
+
+                    columnInfos.Add(
+                        new MySqlJsonTableExpression.ColumnInfo(
+                            Name: jsonNavigationName,
+                            TypeMapping: jsonTypeMapping,
+                            Path: [new PathSegment(jsonNavigationName)],
+                            AsJson: true));
+                }
+                break;
+
+            case IComplexType complexType:
+                foreach (var complexProperty in complexType.GetComplexProperties())
+                {
+                    var jsonPropertyName = complexProperty.ComplexType.GetJsonPropertyName();
+                    Check.DebugAssert(jsonPropertyName is not null, $"No JSON property name for complex property {complexProperty.Name}");
+
+                    columnInfos.Add(
+                        new MySqlJsonTableExpression.ColumnInfo(
+                            Name: jsonPropertyName,
+                            TypeMapping: jsonTypeMapping,
+                            Path: [new PathSegment(jsonPropertyName)],
+                            AsJson: true));
+                }
+                break;
+
+            default:
+                throw new UnreachableException();
+        }
+
+        // Determine the JSON source expression. When a path is present, use JSON_EXTRACT
+        // to get the nested JSON document with its structure intact.
+        SqlExpression jsonSource;
+        if (jsonQueryExpression.Path.Count > 0)
+        {
+            var pathBuilder = new System.Text.StringBuilder("$");
+            foreach (var segment in jsonQueryExpression.Path)
+            {
+                if (segment.PropertyName is not null)
+                {
+                    pathBuilder.Append('.').Append(segment.PropertyName);
+                }
+                else if (segment.ArrayIndex is SqlConstantExpression { Value: int index })
+                {
+                    pathBuilder.Append('[').Append(index).Append(']');
+                }
+            }
+
+            jsonSource = _sqlExpressionFactory.Function(
+                "JSON_EXTRACT",
+                [jsonQueryExpression.JsonColumn, _sqlExpressionFactory.Constant(pathBuilder.ToString())],
+                nullable: true,
+                argumentsPropagateNullability: [true, true],
+                typeof(string),
+                jsonTypeMapping);
+        }
+        else
+        {
+            jsonSource = jsonQueryExpression.JsonColumn;
+        }
+
+        // Construct the JSON_TABLE expression with $[*] to iterate over array elements.
+        var jsonTableExpression = new MySqlJsonTableExpression(
+            tableAlias,
+            jsonSource,
+            [new PathSegment(_sqlExpressionFactory.Constant("*", RelationalTypeMapping.NullMapping))],
+            [.. columnInfos]);
+
+        var keyColumnTypeMapping = _typeMappingSource.FindMapping(typeof(int))!;
+
+#pragma warning disable EF1001 // Internal EF Core API usage.
+        var selectExpression = CreateSelect(
+            jsonQueryExpression,
+            jsonTableExpression,
+            "key",
+            typeof(int),
+            keyColumnTypeMapping);
+#pragma warning restore EF1001 // Internal EF Core API usage.
+
+        return new ShapedQueryExpression(
+            selectExpression,
+            new RelationalStructuralTypeShaperExpression(
+                jsonQueryExpression.StructuralType,
+                new ProjectionBindingExpression(
+                    selectExpression,
+                    new ProjectionMember(),
+                    typeof(ValueBuffer)),
+                false));
     }
 
     protected override ShapedQueryExpression TranslatePrimitiveCollection(SqlExpression sqlExpression, IProperty property, string tableAlias)

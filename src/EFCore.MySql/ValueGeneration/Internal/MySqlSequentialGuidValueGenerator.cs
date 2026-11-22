@@ -3,10 +3,10 @@
 
 using System;
 using System.Security.Cryptography;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using MySqlConnector;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
 {
@@ -50,13 +50,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
 
             var randomBytes = new byte[7];
             _rng.GetBytes(randomBytes);
-            var ticks = (ulong) timeNow.Ticks;
+            var ticks = (ulong)timeNow.Ticks;
 
-            var uuidVersion = (ushort) 4;
-            var uuidVariant = (ushort) 0b1000;
+            var uuidVersion = (ushort)4;
+            var uuidVariant = (ushort)0b1000;
 
             var ticksAndVersion = (ushort)((ticks << 48 >> 52) | (ushort)(uuidVersion << 12));
-            var ticksAndVariant = (byte)  ((ticks << 60 >> 60) | (byte)  (uuidVariant << 4));
+            var ticksAndVariant = (byte)((ticks << 60 >> 60) | (byte)(uuidVariant << 4));
 
             if (_options.ConnectionSettings.GuidFormat == MySqlGuidFormat.LittleEndianBinary16)
             {
@@ -76,7 +76,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.ValueGeneration.Internal
                 return new Guid(guidBytes);
             }
 
-            var guid = new Guid((uint) (ticks >> 32), (ushort) (ticks << 32 >> 48), ticksAndVersion,
+            var guid = new Guid((uint)(ticks >> 32), (ushort)(ticks << 32 >> 48), ticksAndVersion,
                 ticksAndVariant,
                 randomBytes[0],
                 randomBytes[1],

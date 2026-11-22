@@ -20,7 +20,8 @@ namespace QueryBaselineUpdater
                 throw new ArgumentException($"Path '{testFileBasePath}' does not exist or is not a directory.");
             }
 
-            var notFound = new List<string>();
+            var notFoundFiles = new List<string>();
+            var notFoundChunks = new List<string>();
 
             foreach (var file in Regex.Matches(
                              File.ReadAllText(queryBaselineFilePath),
@@ -36,7 +37,7 @@ namespace QueryBaselineUpdater
                                              Regex.Replace(
                                                  Regex.Replace(
                                                      match.Groups["Name"].Value,
-                                                     @"^Pomelo\.EntityFrameworkCore\.MySql\.FunctionalTests\.",
+                                                     @"^(?:Pomelo\.EntityFrameworkCore\.MySql\.FunctionalTests\.|Microsoft\.EntityFrameworkCore\.)",
                                                      string.Empty),
                                                  @"\.[^.]+$",
                                                  string.Empty),
@@ -58,6 +59,12 @@ namespace QueryBaselineUpdater
             {
                 var filePath = file.First().File;
 
+                if (!File.Exists(filePath))
+                {
+                    notFoundFiles.Add(filePath);
+                    continue;
+                }
+
                 // If we didn't find the chunk in the original file, it is possible that the test class is partial and that the chunk exists
                 // in a separate file that has the name `<ClassName>.MySql.cs`.
                 var retryCustomized = new List<string>();
@@ -65,8 +72,8 @@ namespace QueryBaselineUpdater
                 File.WriteAllText(
                     filePath,
                     file.Aggregate(
-                            File.ReadAllText(filePath),
-                            (result, current) => ReplaceChunk(result, current, retryCustomized)));
+                        File.ReadAllText(filePath),
+                        (result, current) => ReplaceChunk(result, current, retryCustomized)));
 
                 if (!retryCustomized.Any())
                 {
@@ -89,28 +96,37 @@ namespace QueryBaselineUpdater
                             .OrderByDescending(t => t.Line)
                             .Aggregate(
                                 File.ReadAllText(customizedFilePath),
-                                (result, current) => ReplaceChunk(result, current, notFound)));
+                                (result, current) => ReplaceChunk(result, current, notFoundChunks)));
                 }
                 else
                 {
-                    notFound.AddRange(retryCustomized);
+                    notFoundChunks.AddRange(retryCustomized);
                 }
             }
 
-            if (notFound.Any())
+            if (notFoundChunks.Any())
             {
                 Console.WriteLine("The following chunks where not found:");
                 Console.WriteLine();
 
-                foreach (var id in notFound)
+                foreach (var id in notFoundChunks)
                 {
                     Console.WriteLine(id);
                 }
-
-                return -1;
             }
 
-            return 0;
+            if (notFoundFiles.Any())
+            {
+                Console.WriteLine("The following files where not found:");
+                Console.WriteLine();
+
+                foreach (var filePath in notFoundFiles)
+                {
+                    Console.WriteLine(filePath);
+                }
+            }
+
+            return notFoundChunks.Any() || notFoundFiles.Any() ? -1 : 0;
         }
 
         private static string ReplaceChunk(string result, AssertSqlChunk current, List<string> notFound)

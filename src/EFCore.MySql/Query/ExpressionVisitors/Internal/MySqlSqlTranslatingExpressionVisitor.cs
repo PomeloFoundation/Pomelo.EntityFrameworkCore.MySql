@@ -70,17 +70,19 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
             var defaultExpression = Visit(bipolarExpression.DefaultExpression) ?? QueryCompilationContext.NotTranslatedExpression;
             var alternativeExpression = Visit(bipolarExpression.AlternativeExpression) ?? QueryCompilationContext.NotTranslatedExpression;
 
-            return defaultExpression != QueryCompilationContext.NotTranslatedExpression
-                // ? alternativeExpression != QueryCompilationContext.NotTranslatedExpression
-                //     // ? new MySqlBipolarSqlExpression(
-                //     //     (SqlExpression)defaultExpression,
-                //     //     (SqlExpression)alternativeExpression)
-                //     ? QueryCompilationContext.NotTranslatedExpression
-                //     : (SqlExpression)defaultExpression
-                ? (SqlExpression)defaultExpression
-                : alternativeExpression != QueryCompilationContext.NotTranslatedExpression
-                    ? (SqlExpression)alternativeExpression
-                    : QueryCompilationContext.NotTranslatedExpression;
+            // In EF Core 10, visited expressions may be StructuralTypeReferenceExpression
+            // instead of SqlExpression, so check the type before casting to avoid InvalidCastException.
+            if (defaultExpression != QueryCompilationContext.NotTranslatedExpression && defaultExpression is SqlExpression)
+            {
+                return defaultExpression;
+            }
+
+            if (alternativeExpression != QueryCompilationContext.NotTranslatedExpression && alternativeExpression is SqlExpression)
+            {
+                return alternativeExpression;
+            }
+
+            return QueryCompilationContext.NotTranslatedExpression;
         }
 
         /// <inheritdoc />
@@ -98,7 +100,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 {
                     return _sqlExpressionFactory.NullableFunction(
                         "LENGTH",
-                        new[] {sqlOperand},
+                        new[] { sqlOperand },
                         typeof(int));
                 }
 
@@ -267,7 +269,39 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 //     argumentsPropagateNullability: new[] { false, true, true });
             }
 
+            // MySQL's `/` operator always performs decimal division (5 / 2 = 2.5),
+            // but C# truncates integer division (5 / 2 = 2).
+            // Use MySQL's `DIV` operator for integer operands to match C# semantics.
+            if (binaryExpression.NodeType == ExpressionType.Divide &&
+                IsIntegerType(binaryExpression.Left.Type) &&
+                IsIntegerType(binaryExpression.Right.Type))
+            {
+                if (TranslationFailed(binaryExpression.Left, Visit(TryRemoveImplicitConvert(binaryExpression.Left)), out var divideLeft) ||
+                    TranslationFailed(binaryExpression.Right, Visit(TryRemoveImplicitConvert(binaryExpression.Right)), out var divideRight))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                return _sqlExpressionFactory.MySqlIntegerDivide(
+                    (SqlExpression)divideLeft,
+                    (SqlExpression)divideRight);
+            }
+
             return base.VisitBinary(binaryExpression);
+        }
+
+        private static bool IsIntegerType(Type type)
+        {
+            type = type.UnwrapNullableType();
+            return type == typeof(int)
+                || type == typeof(long)
+                || type == typeof(short)
+                || type == typeof(byte)
+                || type == typeof(uint)
+                || type == typeof(ulong)
+                || type == typeof(ushort)
+                || type == typeof(sbyte)
+                || type == typeof(char);
         }
 
         private Expression TranslateByteArrayElementAccess(Expression array, Expression index)
@@ -427,6 +461,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 "GREATEST",
                 expressions,
                 resultType,
+                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions.ToArray()),
                 true);
 
         public override SqlExpression GenerateLeast(IReadOnlyList<SqlExpression> expressions, Type resultType)
@@ -434,6 +469,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 "LEAST",
                 expressions,
                 resultType,
+                Microsoft.EntityFrameworkCore.Query.ExpressionExtensions.InferTypeMapping(expressions.ToArray()),
                 true);
 
         #region Copied from RelationalSqlTranslatingExpressionVisitor

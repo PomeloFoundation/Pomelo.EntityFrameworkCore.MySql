@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -288,11 +288,13 @@ WHERE MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0"
             Assert.Equal(3, count);
 
             AssertSql(
-                @"@__searchMode_1='2'
+"""
+@searchMode='2'
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) OR (((@__searchMode_1 = 1) AND (MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@__searchMode_1 = 2) AND (MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))");
+WHERE ((@searchMode = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) OR (((@searchMode = 1) AND (MATCH (`h`.`Name`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@searchMode = 2) AND (MATCH (`h`.`Name`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))
+""");
         }
 
         [ConditionalFact]
@@ -317,11 +319,13 @@ WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`) AGAINST ('First*') > 0.0)) 
             Assert.Equal(5, count);
 
             AssertSql(
-                @"@__searchMode_1='2'
+"""
+@searchMode='2'
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE ((@__searchMode_1 = 0) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*') > 0.0)) OR (((@__searchMode_1 = 1) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@__searchMode_1 = 2) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))");
+WHERE ((@searchMode = 0) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*') > 0.0)) OR (((@searchMode = 1) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' WITH QUERY EXPANSION) > 0.0)) OR ((@searchMode = 2) AND (MATCH (`h`.`Name`, `h`.`Garden`) AGAINST ('First*' IN BOOLEAN MODE) > 0.0)))
+""");
         }
 
         [ConditionalFact]
@@ -371,11 +375,14 @@ WHERE MATCH (`h`.`Name`) AGAINST ('+First +Herb' IN BOOLEAN MODE) > 0.0");
 
             Assert.Equal(3, count);
 
-            AssertSql(@"@__minScore_1='0.2'
+            AssertSql(
+"""
+@minScore='0.2'
 
 SELECT COUNT(*)
 FROM `Herb` AS `h`
-WHERE MATCH (`h`.`Name`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > @__minScore_1");
+WHERE MATCH (`h`.`Name`) AGAINST ('First* Herb*' IN BOOLEAN MODE) > @minScore
+""");
         }
 
         [ConditionalFact]

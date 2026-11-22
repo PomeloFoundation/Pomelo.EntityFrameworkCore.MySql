@@ -2,14 +2,14 @@
 // Licensed under the MIT. See LICENSE in the project root for license information.
 
 using System;
-using System.Text;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using System.Text;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 

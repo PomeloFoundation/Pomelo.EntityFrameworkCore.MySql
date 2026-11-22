@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
@@ -89,6 +89,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
 
         // JSON default mapping
         private MySqlJsonTypeMapping<string> _jsonDefaultString;
+        private MySqlStructuralJsonTypeMapping _structuralJsonTypeMapping;
 
         // Scaffolding type mappings
         private readonly MySqlCodeGenerationMemberAccessTypeMapping _codeGenerationMemberAccess = MySqlCodeGenerationMemberAccessTypeMapping.Default;
@@ -135,6 +136,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 : null;
 
             _jsonDefaultString = new MySqlJsonTypeMapping<string>("json", null, null, _options.NoBackslashEscapes, _options.ReplaceLineBreaksWithCharFunction);
+            _structuralJsonTypeMapping = MySqlStructuralJsonTypeMapping.Default;
 
             _storeTypeMappings
                 = new Dictionary<string, RelationalTypeMapping[]>(StringComparer.OrdinalIgnoreCase)
@@ -263,7 +265,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
             // Guid
             if (_guid != null)
             {
-                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[]{ _guid };
+                _storeTypeMappings[_guid.StoreType] = new RelationalTypeMapping[] { _guid };
                 _clrTypeMappings[typeof(Guid)] = _guid;
             }
 
@@ -330,10 +332,17 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                             ?.WithTypeMappingInfo(in mappingInfo);
                 }
 
-                if (storeTypeName.Equals("json", StringComparison.OrdinalIgnoreCase) &&
-                    (clrType == null || clrType == typeof(string) || clrType == typeof(MySqlJsonString)))
+                if (storeTypeName.Equals("json", StringComparison.OrdinalIgnoreCase))
                 {
-                    return _jsonDefaultString;
+                    if (clrType == typeof(JsonTypePlaceholder))
+                    {
+                        return _structuralJsonTypeMapping;
+                    }
+
+                    if (clrType == null || clrType == typeof(string) || clrType == typeof(MySqlJsonString))
+                    {
+                        return _jsonDefaultString;
+                    }
                 }
 
                 // A store type name was provided, but is unknown. This could be a domain (alias) type, in which case
@@ -426,6 +435,11 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                     return new MySqlByteArrayTypeMapping(
                         size: size,
                         fixedLength: mappingInfo.IsFixedLength == true);
+                }
+
+                if (clrType == typeof(JsonTypePlaceholder))
+                {
+                    return _structuralJsonTypeMapping;
                 }
 
                 if (_scaffoldingClrTypeMappings.TryGetValue(clrType, out mapping))

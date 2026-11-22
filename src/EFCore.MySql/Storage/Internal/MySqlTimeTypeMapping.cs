@@ -34,7 +34,9 @@ namespace Pomelo.EntityFrameworkCore.MySql.Storage.Internal
                 new RelationalTypeMappingParameters(
                     new CoreTypeMappingParameters(
                         clrType,
-                        jsonValueReaderWriter: JsonTimeOnlyReaderWriter.Instance),
+                        jsonValueReaderWriter: clrType == typeof(TimeOnly)
+                            ? JsonTimeOnlyReaderWriter.Instance
+                            : JsonTimeSpanReaderWriter.Instance),
                     storeType,
                     StoreTypePostfix.Precision,
                     System.Data.DbType.Time,

@@ -53,13 +53,13 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                     var sourceTypeMapping = source.TypeMapping;
 
                     var value = arguments[1] is SqlConstantExpression constantValue
-                        ? (SqlExpression)_sqlExpressionFactory.Constant(new[] {(byte)constantValue.Value}, sourceTypeMapping)
+                        ? (SqlExpression)_sqlExpressionFactory.Constant(new[] { (byte)constantValue.Value }, sourceTypeMapping)
                         : _sqlExpressionFactory.Convert(arguments[1], typeof(byte[]), sourceTypeMapping);
 
                     return _sqlExpressionFactory.GreaterThan(
                         _sqlExpressionFactory.NullableFunction(
                             "LOCATE",
-                            new[] {value, source},
+                            new[] { value, source },
                             typeof(int)),
                         _sqlExpressionFactory.Constant(0));
                 }
@@ -68,7 +68,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                 {
                     return _sqlExpressionFactory.NullableFunction(
                         "ASCII",
-                        new[] {arguments[0]},
+                        new[] { arguments[0] },
                         typeof(byte));
                 }
             }

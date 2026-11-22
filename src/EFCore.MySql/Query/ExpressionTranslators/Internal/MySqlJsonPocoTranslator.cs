@@ -95,7 +95,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
                expression is ColumnExpression columnExpression && columnExpression.TypeMapping is MySqlJsonTypeMapping
                 ? _sqlExpressionFactory.NullableFunction(
                     "JSON_LENGTH",
-                    new[] {expression},
+                    new[] { expression },
                     typeof(int),
                     _intTypeMapping,
                     false)

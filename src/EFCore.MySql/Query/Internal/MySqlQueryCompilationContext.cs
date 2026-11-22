@@ -21,9 +21,8 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.Internal
             [NotNull] QueryCompilationContextDependencies dependencies,
             [NotNull] RelationalQueryCompilationContextDependencies relationalDependencies,
             bool async,
-            bool precompiling,
-            IReadOnlySet<string> nonNullableReferenceTypeParameters)
-            : base(dependencies, relationalDependencies, async, precompiling, nonNullableReferenceTypeParameters)
+            bool precompiling)
+            : base(dependencies, relationalDependencies, async, precompiling)
         {
         }
 
