@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -9152,7 +9153,7 @@ WHERE (
         await AssertQuery(
             async,
             ss => ss.Set<Mission>().Where(
-                m => start <= m.Timeline.Date && m.Timeline < end && dates.Contains(m.Timeline)));
+                m => start <= m.Timeline.Date && m.Timeline < end && ((IEnumerable<DateTimeOffset>)dates).Contains(m.Timeline)));
 
         if (MySqlTestHelpers.HasPrimitiveCollectionsSupport(Fixture))
         {

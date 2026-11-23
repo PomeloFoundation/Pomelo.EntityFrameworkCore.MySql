@@ -15,6 +15,8 @@
     <LangVersion>latest</LangVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <NuGetAudit>false</NuGetAudit>
+    <NoWarn>$(NoWarn);NU1903;NU1605;EF1003;ASPDEPR008;CA2007</NoWarn>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -26,12 +28,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PomeloTargetFramework>net8.0</PomeloTargetFramework>
-    <PomeloTestTargetFramework>net9.0</PomeloTestTargetFramework>
-    <EfCoreTargetFramework>net8.0</EfCoreTargetFramework>
-    <EfCoreTestTargetFramework>net9.0</EfCoreTestTargetFramework>
-    <MySqlConnectorTargetFramework>net8.0</MySqlConnectorTargetFramework>
-    <MySqlConnectorDependencyInjectionTargetFramework>net8.0</MySqlConnectorDependencyInjectionTargetFramework>
+    <PomeloTargetFramework>net10.0</PomeloTargetFramework>
+    <PomeloTestTargetFramework>net10.0</PomeloTestTargetFramework>
+    <EfCoreTargetFramework>net10.0</EfCoreTargetFramework>
+    <EfCoreTestTargetFramework>net10.0</EfCoreTestTargetFramework>
+    <MySqlConnectorTargetFramework>net10.0</MySqlConnectorTargetFramework>
+    <MySqlConnectorDependencyInjectionTargetFramework>net10.0</MySqlConnectorDependencyInjectionTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
