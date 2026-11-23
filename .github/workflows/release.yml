@@ -595,3 +595,13 @@ jobs:
         working-directory: nupkgs
         shell: pwsh
         run: dotnet nuget push './Release/default/**/*.nupkg' -k '${{ steps.nuget-login.outputs.NUGET_API_KEY }}' -s 'https://api.nuget.org/v3/index.json' --skip-duplicate --no-symbols
+  GitHubRelease:
+    needs: NuGet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" --verify-tag --generate-notes
