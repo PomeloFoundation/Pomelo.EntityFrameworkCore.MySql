@@ -145,13 +145,7 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionTranslators.Internal
 
             return result;
 
-            SqlExpression Json(SqlExpression e) => _sqlExpressionFactory.ApplyTypeMapping(EnsureJson(e), _sqlExpressionFactory.FindMapping(e.Type, "json"));
-
-            static SqlExpression EnsureJson(SqlExpression e)
-                => e.TypeMapping is MySqlJsonTypeMapping ||
-                   e is MySqlJsonTraversalExpression
-                    ? e
-                    : throw new InvalidOperationException("The JSON method requires a JSON parameter but none was found.");
+            SqlExpression Json(SqlExpression e) => _sqlExpressionFactory.ApplyTypeMapping(e, _sqlExpressionFactory.FindMapping(e.Type, "json"));
 
             static SqlExpression RemoveConvert(SqlExpression e)
             {
