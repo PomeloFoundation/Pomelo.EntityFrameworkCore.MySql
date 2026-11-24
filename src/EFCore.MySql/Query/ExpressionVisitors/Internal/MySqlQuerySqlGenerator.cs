@@ -1016,12 +1016,5 @@ namespace Pomelo.EntityFrameworkCore.MySql.Query.ExpressionVisitors.Internal
                 Sql.Append(")");
             }
         }
-
-        /// <inheritdoc />
-        protected override void CheckComposableSql(string sql)
-        {
-            // MySQL supports CTE (WITH) expressions within subqueries, as well as others,
-            // so we allow any raw SQL to be composed over.
-        }
     }
 }
