@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.BulkUpdates;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -1474,6 +1475,28 @@ INNER JOIN `Orders` AS `o0` ON `o`.`OrderID` = `o0`.`OrderID`
 WHERE `p`.`Discontinued` AND (`o0`.`OrderDate` > TIMESTAMP '1990-01-01 00:00:00')
 """);
     }
+
+    [ConditionalTheory]
+    [MemberData(nameof(IsAsyncData))]
+    public virtual Task Update_Where_set_ordering_is_preserved(bool async)
+        => TestHelpers.ExecuteWithStrategyInTransactionAsync(
+            Fixture.CreateContext, Fixture.UseTransaction,
+            async context =>
+            {
+                var updated = await context.Set<Customer>().ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(c => c.ContactName, "X")
+                        .SetProperty(c => c.ContactTitle, c => c.ContactName + "Y"));
+                Assert.True(updated > 0);
+                Assert.Equal(updated, await context.Set<Customer>().CountAsync(c => c.ContactTitle == "XY"));
+
+                updated = await context.Set<Customer>().ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(c => c.City, "Y")
+                        .SetProperty(c => c.ContactName, c => c.City + "X"));
+                Assert.True(updated > 0);
+                Assert.Equal(updated, await context.Set<Customer>().CountAsync(c => c.ContactName == "YX"));
+            });
 
     private void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
